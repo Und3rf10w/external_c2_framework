@@ -6,7 +6,7 @@
 
 # Imports we'll need
 import struct
-from socket import *
+import socket
 
 # Address of External c2 server
 EXTERNAL_C2_ADDR = ""
