@@ -63,7 +63,7 @@ class commonUtils:
 		# If we get an error writing to the pipe, we need to consider this beacon killed
 
 		# Prepare the pipename variable
-		pipename = "\\.\pipe\" + pipename
+		pipename = "\\.\pipe\\" + pipename
 
 		# Basically, this would be whatever stuff is needed to write to the SMB pipe, and send the data to it
 		# return 0 if it worked
@@ -80,7 +80,7 @@ class commonUtils:
 		# This will read data from given pipename
 
 		# Prepare the pipename variable
-		pipename = "\\.\pipe\" + pipename
+		pipename = "\\.\pipe\\" + pipename
 
 		# Basically, this would be whatever stuff is needed to read from the SMB pipe
 		# returns the data read from the pipe if it worked, else return Null
