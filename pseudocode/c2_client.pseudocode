@@ -238,6 +238,6 @@ def main(pipe_connection):
 		prep_taskResponse = commonUtils.prepData(taskResponse)
 
 		# Send it to the controller
-		sendData(prep_taskResponse)
+		commonUtils.sendData(prep_taskResponse)
 
 		# restart this loop until notifyKill() ends up being called
