@@ -382,7 +382,7 @@ def main():
 		if args.debug:
 			print commonUtils.color("Closing the socket to the c2 server")
 		commonUtils.killSocket(sock)
-		print commonUtils.color("\n Exiting...", warning=True)
+		print commonUtils.color("\nExiting...", warning=True)
 		sys.exit(0)
 
 main()

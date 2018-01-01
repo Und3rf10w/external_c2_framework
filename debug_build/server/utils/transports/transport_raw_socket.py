@@ -2,6 +2,7 @@
 # Not exactly covert...
 import socket
 import sys
+import struct
 
 # GHETTO CONFIG, should be read in from a master configuration file...
 HOST = '0.0.0.0'
@@ -12,6 +13,7 @@ def prepTransport():
 	This functions prepares the transport module for use
 	"""
 	# Create a socket
+	global transSock
 	transSock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 	try:
 		print "Attempting to bind to " + str(HOST) + ":" + str(PORT)
@@ -29,7 +31,7 @@ def prepTransport():
 
 	return transSock
 
-def sendData(transSock, data):
+def sendData(data):
 	"""
 	This function sends 'data' via the covert channel 'transSock'
 	"""
@@ -39,7 +41,7 @@ def sendData(transSock, data):
 
 	return 0
 
-def retrieveData(transSock):
+def retrieveData():
 	"""
 	This function retrieves 'data' via the covert channel 'transSock' and returns it
 	"""
