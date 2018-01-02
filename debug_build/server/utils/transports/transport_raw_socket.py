@@ -76,5 +76,4 @@ def retrieveData():
 	dataSize = struct.unpack('<I', frameSize)[0]
 	data = connSock.recv(dataSize)
 
-	decoded_data = decode(data)
-	return decoded_data
+	return data

