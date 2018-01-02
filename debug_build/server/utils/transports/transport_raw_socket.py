@@ -69,14 +69,12 @@ def retrieveData():
 
 	# Realizing that I have to unpack the buffer length first:
 
-	try:
-		bufLen = struct.unpack('<I', connSock.recv(4))[0]
-	except:
-		bufLen = 0
-	if bufLen is not 0:
-		print "Receiving %s bytes..." % (str(bufLen)) #debug
-		data = connSock.recv(bufLen)
-	else:
-		print "No data received" #debug
-		data = ""
-	return(data)
+	frameSize = ""
+	while len(frameSize) != 4:
+		frameSize = connSock.recv(4)
+
+	dataSize = struct.unpack('<I', frameSize)[0]
+	data = connSock.recv(dataSize)
+
+	decoded_data = decode(data)
+	return decoded_data
