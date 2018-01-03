@@ -29,22 +29,43 @@ def prepTransport():
 
 
 def sendData(data):
-	if len(data) > 10000: # This number is probably wrong. It should actually be the maximum allowable request length
-		dataArray = [data[i:i + 6000] for i in range(0, len(data), 6000)]
+	encoded_data = encode(data)
+	api.send_direct_message(user=USERNAME, text=len(data))
+	if len(encoded_data) > 10000:
+		dataArray = [encoded_data[i:i + 6000] for i in range(0, len(encoded_data), 6000)]
 		for chunk in dataArray:
 			api.send_direct_message(user=USERNAME, text=chunk)
 			sleep(0.1)
 	else:
-		api.send_direct_message(user=USERNAME, text=data)
+		api.send_direct_message(user=USERNAME, text=encoded_data)
 
 
 def retrieveData():
 	data = ""
-	for message in api.direct_messages(count=200, full_text="true"):
-		if (message.sender_screen_name == USERNAME):
-			try:
-				data += message.text # ignore the frame size
-			except:
-				data += None
-				pass
+	dataSize = None
+	while (dataSize is None):
+		try:
+			dataSize = api.direct_messages(count=1, full_text="true")[0]
+		except IndexError:
+			sleep(5)
+	while not (dataSize.text, int):
+		sleep(5)
+		dataSize = api.direct_messages(count=1, full_text="true")[0]
+	# for message in api.direct_messages(count=1000, full_text="true"):
+	while (len(data) != dataSize):
+		for message in api.direct_messages(count=1000, full_text="true", since_id=dataSize.id):
+			if (message.sender_screen_name == USERNAME):
+				try:
+					data += message.text
+					bufSize += len(data)
+				except:
+					pass
+	deleteDirectMessages()
 	return data
+
+def deleteDirectMessages():
+	dlist = api.direct_messages()
+	if len(dlist) >= 1:
+		for d in dlist:
+			d.destroy()
+	print "DMs destroyed"

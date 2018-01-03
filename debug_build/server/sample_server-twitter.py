@@ -175,6 +175,9 @@ class configureStage(object):
 		# Send options to the external_c2 server
 		configureStage.configureOptions(sock, C2_ARCH, C2_PIPE_NAME, C2_BLOCK_TIME)
 
+		# Let's wait for an ack that the client is ready to recieve the stager.
+		commonUtils.retrieveData()
+
 		if args.debug:
 			print commonUtils.color("stager configured, sending 'go'", status=False, yellow=True)
 
