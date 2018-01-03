@@ -4,6 +4,8 @@
 # TODO, consider if we need to delete DMs or not.
 
 import tweepy
+import struct
+from time import sleep
 
 # GHETTO CONFIG SECTION, TO BE EVENTUALLY UPDATED WHEN CONFIG READING IS PATCHED IN
 
@@ -27,17 +29,22 @@ def prepTransport():
 
 
 def sendData(data):
-	slen = struct.pack('<I', len(data))
-	message = (slen+data)
-	api.send_direct_message(user=USERNAME, text=message)
+	if len(data) > 10000: # This number is probably wrong. It should actually be the maximum allowable request length
+		dataArray = [data[i:i + 6000] for i in range(0, len(data), 6000)]
+		for chunk in dataArray:
+			api.send_direct_message(user=USERNAME, text=chunk)
+			sleep(0.1)
+	else:
+		api.send_direct_message(user=USERNAME, text=data)
 
 
 def retrieveData():
+	data = ""
 	for message in api.direct_messages(count=200, full_text="true"):
 		if (message.sender_screen_name == USERNAME):
 			try:
-				data = message.text[4:] # ignore the frame size
+				data += message.text # ignore the frame size
 			except:
-				data = None
+				data += None
 				pass
 	return data
