@@ -75,11 +75,11 @@ def recvData():
 		print id_list[0].split()
 		if not id_list[0].split():
 			sleep(10) # wait for 10 seconds before checking again
+			c.select("INBOX")
 			typ, id_list = c.search(None, '(UNSEEN SUBJECT "New4You")')
 			pass
 		else:
 			for msg_id in id_list[0].split():
-				print msg_id
 				msg = c.fetch(msg_id, '(RFC822)')
 				#c.store(msg_id, '+FLAGS', '\SEEN')
 				msg = ([x[0] for x in msg][1])[1]

@@ -57,6 +57,7 @@ def retrieveData():
 		print id_list[0].split()
 		if not id_list[0].split():
 			sleep(10) # wait for 10 seconds before checking again
+			c.select("INBOX")
 			typ, id_list = c.search(None, '(UNSEEN SUBJECT "Resp4You")')
 			pass
 		else:
@@ -66,6 +67,5 @@ def retrieveData():
 				msg = ([x[0] for x in msg][1])[1]
 				for part in email.message_from_string(msg).walk():
 					msg = part.get_payload()
-				print "got the message?"
 				c.logout()
 				return msg
