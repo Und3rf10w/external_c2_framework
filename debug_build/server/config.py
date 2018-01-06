@@ -26,3 +26,7 @@ TRANSPORT_MODULE = "transport_gmail"
 
 ###########################################
 # DEBUG: </END GHETTO CONFIG>
+
+# Anything taken in from argparse that you want to make avaialable goes here:
+verbose = False
+degub = False

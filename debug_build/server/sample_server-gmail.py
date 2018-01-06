@@ -4,6 +4,7 @@ from utils import commonUtils
 import configureStage
 import establishedSession
 import config
+from time import sleep
 
 def importModule(modName, modType):
 	"""
@@ -25,17 +26,23 @@ def main():
 	# Call arguments with args.$ARGNAME
 	args = parser.parse_args()
 
+	# Assign the arguments to config.$ARGNAME
+	config.verbose = args.verbose
+	config.debug = args.debug
+
 	# Enable verbose output if debug is enabled
-	if args.debug:
-		args.verbose = True
+	if config.debug:
+		config.verbose = True
 
 	# Import our defined encoder and transport modules
-	if args.verbose:
+	if config.verbose:
 		print (commonUtils.color("Importing encoder module: ") + "%s") % (config.ENCODER_MODULE)
 	importModule(config.ENCODER_MODULE, "encoder")
-	if args.verbose:
+	commonUtils.importModule(config.ENCODER_MODULE, "encoder")
+	if config.verbose:
 		print (commonUtils.color("Importing transport module: ") + "%s") % (config.TRANSPORT_MODULE)
 	importModule(config.TRANSPORT_MODULE, "transport")
+	commonUtils.importModule(config.TRANSPORT_MODULE, "transport")
 
 
 	try:
@@ -66,17 +73,17 @@ def main():
 
 		# Now that the stager is configured, lets start our main loop
 		while True:
-			if args.verbose:
+			if config.verbose:
 				print commonUtils.color("Checking the c2 server for new tasks...")
 
 			newTask = establishedSession.checkForTasks(sock)
 
 			# once we have a new task (even an empty one), lets relay that to our client
-			if args.debug:
+			if config.debug:
 				print commonUtils.color("Encoding and relaying task to client", status=False, yellow=True)
 			establishedSession.relayTask(newTask)
 			# Attempt to retrieve a response from the client
-			if args.verbose:
+			if config.verbose:
 				print commonUtils.color("Checking the client for a response...")
 			b_response = establishedSession.checkForResponse()
 
@@ -87,7 +94,7 @@ def main():
 
 			# Restart this loop
 	except KeyboardInterrupt:
-		if args.debug:
+		if config.debug:
 			print commonUtils.color("\nClosing the socket to the c2 server")
 		commonUtils.killSocket(sock)
 		print commonUtils.color("\nExiting...", warning=True)

