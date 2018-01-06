@@ -29,4 +29,4 @@ TRANSPORT_MODULE = "transport_gmail"
 
 # Anything taken in from argparse that you want to make avaialable goes here:
 verbose = False
-degub = False
+debug = False
