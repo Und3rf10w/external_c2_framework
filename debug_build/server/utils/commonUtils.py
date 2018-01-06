@@ -1,9 +1,10 @@
 import socket
 import struct
+import config
 def createSocket():
 	# Borrowed from https://github.com/outflanknl/external_c2/blob/master/python_c2ex.py
 	d = {}
-	d['sock'] = socket.create_connection((EXTERNAL_C2_ADDR, int(EXTERNAL_C2_PORT)))
+	d['sock'] = socket.create_connection((config.EXTERNAL_C2_ADDR, int(config.EXTERNAL_C2_PORT)))
 	d['state'] = 1
 	return (d['sock'])
 
@@ -85,12 +86,3 @@ def color(string, status=True, warning=False, bold=True, yellow=False):
 
 # TODO: add a function that handles logic for when a session exits to notify the c2 controller. Right now, this could/would only ever by killing the socket.
 #       if the spec ever changes to support restoration for sessions, then this can become a priority.
-
-def importModule(modName, modType):
-	"""
-	Imports a passed module as either an 'encoder' or a 'transport'; called with either encoder.X() or transport.X()
-	"""
-	prep_global = "global " + modType
-	exec(prep_global)
-	importName = "import utils." + modType + "s." + modName + " as " + modType
-	exec(importName, globals())

