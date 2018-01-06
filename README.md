@@ -113,7 +113,7 @@ If everything worked, a new beacon will be registered within the Cobalt Strike c
 
 # FAQ
 **Why would you write this?**:
-There weren't very many released implementation of the spec, and of the ones that are relased, they either are not in a language that I am familiar with or do not have the modularity and abstraction that I was seeking.
+There weren't very many released implementation of the spec, and of the ones that are released, they either are not in a language that I am familiar with or do not have the modularity and abstraction that I was seeking.
 
 **Why Python 2?**:
 I'm lazy and it's easy to implement new transport and encoding channels in it.
