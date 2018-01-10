@@ -27,8 +27,10 @@ def main():
 	args = parser.parse_args()
 
 	# Assign the arguments to config.$ARGNAME
-	config.verbose = args.verbose
-	config.debug = args.debug
+	if not config.verbose:
+		config.verbose = args.verbose
+	if not config.debug:
+		config.debug = args.debug
 
 	# Enable verbose output if debug is enabled
 	if config.debug:
