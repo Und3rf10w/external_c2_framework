@@ -6,33 +6,11 @@ import argparse
 
 
 # TODO: Patch in startup sanity checks:
-#	* Parse a config that instructs how to:
-#		- transmit/recieve data via a covert channel
-#		- encode/decode data
-#	* Config can also store basic info such as c2 server connection, stager options, and server/covert channel polling refresh time
-#	* On start: First thing we should do is wait/confirm that we have a connection from the client and that it is ready to recieve a stager or tasks.
 
-# Basic order of operations for a new client:
-#	* Once a confirmation from the client is recieved, retrieve the stager, and ensure that the stager is properly configured for transmission via the covert channel
-#	* Recieve a confirmation that the stager is running and properly configured from the client, and ready to recieve tasks
-#		- Client can send out some basic info about the machine it's running on. I don't care.t
-#	* Poll c2 server for new tasks
-#	* Relay new task to c2 client via covert channel
-#	* Await a response from c2 client via covert channel
-#	* Relay response to the c2 server
-#	* Poll c2 server for new tasks
-#	* ???
-#	* Profit
-
-# Another thing we can do is once the server and client starts (i.e. before sending a stager), we can send the C2_PIPE_NAME to the client via the covert channel. 
+# One thing we can do is once the server and client starts (i.e. before sending a stager), we can send the C2_PIPE_NAME to the client via the covert channel. 
 # The client can retrieve it via the covert channel, and enumerate the name(s) of the pipes available to it, and compare that against the given C2_PIPE_NAME.
 # If a matching C2_PIPE_NAME is found on the client, notify the server via the covert channel, and both the server and client should start their respective establishedSession loop.
-# This would enable us to resume a running beacon if the spec is updated to support it. Need to bring up to Mudge as a question/feature request.
-
-# Another thing to ask Mudge would be which setup is most optimal...
-#	1. Have the client push out the stager options?
-#	2. Have the server push out the stager options?
-#	3. Have the stager options stored in a mutual config?
+# This would enable us to resume a running beacon if the spec is updated to support it.
 
 # TODO: Have a proper function that reads in a config
 

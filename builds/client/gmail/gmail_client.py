@@ -18,13 +18,13 @@ from email.MIMEBase import MIMEBase
 from email.MIMEText import MIMEText
 from time import sleep
 
-# START GHETTO ASS CONFIG, should be read in when compiled...
+# START GHETTO CONFIG, should be read in when compiled...
 GMAIL_USER = 'example@gmail.com'
 GMAIL_PWD = 'hunter2'
 SERVER = 'smtp.gmail.com'
 #SERVER_PORT = 587
 SERVER_PORT = 465
-# END GHETTO ASS CONFIG
+# END GHETTO CONFIG
 
 # THIS SECTION (encoder and transport functions) WILL BE DYNAMICALLY POPULATED BY THE BUILDER FRAMEWORK
 # <encoder functions>
