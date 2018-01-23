@@ -79,7 +79,7 @@ def recvData():
 				sleep(5)
 				pass
 			
-			if counter_pattern.match(message.subject):
+			if counter_pattern.match(message.subject) and (RECV_NAME in message.subject):
 				# This is incredibly dirty, I apologize in advance. Basically,
 				#   we get the count, find the first message, 
 				#   set it to the TASK_ID, and start to compile the full task
