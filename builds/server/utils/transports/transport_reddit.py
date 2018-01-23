@@ -6,6 +6,7 @@
 # TODO: account for 10k character limit in PMs
 import praw
 from time import sleep
+import re
 
 # START OF CONFIG
 CLIENT_ID = ""
@@ -43,28 +44,79 @@ def prepTransport():
 	return reddit
 
 def sendData(data):
-	# Because we're keeping the taskid, we can easily support parsing multiple
-	#    tasks later
-	reddit.redditor(USERNAME).message(SEND_NAME, data)
-	return 0
+	if len(data) > 10000:
+		data_list = [data[i:i+10000] for i in range(0, len(data), 10000)]
+		sent_counter = 1
+		for message in data_list:
+			cur_subject = SEND_NAME + (" | " + str(sent_counter) + "/" + str(len(data_list)))
+			reddit.redditor(USERNAME).message(cur_subject, message)
+			sent_counter += 1
+		return 0
+	else:
+		reddit.redditor(USERNAME).message(SEND_NAME, data)
+		return 0
 
 
 def retrieveData():
-	# Here, we're going to assume the only messages in the inbox with our 
-	#   subject are relevant and contain a full task or response, requiring only one task at a time
+	counter_pattern = re.compile("^.* \| [0-9]+/[0-9]+$")
+	total_count = re.compile("^.*/[0-9]+$")
+	current_target = 1
 	task = ""
+	# First, we'll see if there's a new message, if it has a counter, 
+	#  we'll take it into account, and loop through the messages to find
+	#  our first one.
 	while True:
 		for message in reddit.inbox.messages(limit=1):
-			# Waiting for a new task
 			if message.id <= TASK_ID:
 				sleep(5)
 				pass
+			
+			if counter_pattern.match(message.subject):
+				# This is incredibly dirty, I apologize in advance. Basically,
+				#   we get the count, find the first message, 
+				#   set it to the TASK_ID, and start to compile the full task
+				counter_target = message.subject.split("/")[1]
+				
+				if message.subject == (RECV_NAME + " | 1/" + str(counter_target)):
+					global TASK_ID
+					TASK_ID = message.id
+					task += message.body
+					current_target += 1
+					sleep(1)
+					pass
+				
+				elif int(current_target) > int(counter_target):
+					global TASK_ID
+					TASK_ID = message.id
+					return task
+				
+				elif message.subject != (RECV_NAME + " | " + str(current_target) + "/" + str(counter_target)):
+					# We're getting these out of order, time for us to find the next message, and loop through it
+					while True:
+						msgiter = iter(reddit.inbox.messages())
+						for submessage in msgiter:
+							if int(current_target) > int(counter_target):
+								global TASK_ID
+								TASK_ID = message.id
+								return task
+							if submessage.subject == (RECV_NAME + " | " + str(current_target) + "/" + str(counter_target)):
+								current_target += 1
+								task += submessage.body
+								# sleep(0.1)
+								break
+							if submessage.subject != (RECV_NAME + " | " + str(current_target) + "/" + str(counter_target)):
+								# sleep(0.1)
+								continue
+							else:
+								pass
+				
 			# Got our new task
-			if message.subject == RECV_NAME:
+			elif message.subject == RECV_NAME:
 				task = message.body
 				global TASK_ID
 				TASK_ID = message.id
 				return task
+			
 			else:
 				# message.id isn't right, but we don't have a task yet
 				sleep(5)
