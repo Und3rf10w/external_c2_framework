@@ -27,13 +27,12 @@ RECV_NAME = "Resp4You"
 # logger.addHandler(handler)
 # </DEBUG LOGGING>
 
-# Don't change this
-global TASK_ID
-TASK_ID = ""
 
 def prepTransport():
 	# Auth as a script app
 	global reddit # DEBUG: Not sure if needed
+	global TASK_ID
+	TASK_ID = "0"
 	reddit = praw.Reddit(client_id=CLIENT_ID,
 		client_secret=CLIENT_SECRET,
 		password=PASSWORD,
@@ -63,10 +62,10 @@ def retrieveData():
 			# Got our new task
 			if message.subject == RECV_NAME:
 				task = message.body
+				global TASK_ID
 				TASK_ID = message.id
-				break
-			# Hopefully you never hit this
+				return task
 			else:
+				# message.id isn't right, but we don't have a task yet
 				sleep(5)
 				pass
-	return task

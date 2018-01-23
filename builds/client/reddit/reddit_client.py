@@ -22,7 +22,7 @@ SEND_NAME = "Resp4You" # Subject of PM
 RECV_NAME = "New4You"
 # END GHETTO CONFIG
 
- THIS SECTION (encoder and transport functions) WILL BE DYNAMICALLY POPULATED BY THE BUILDER FRAMEWORK
+# THIS SECTION (encoder and transport functions) WILL BE DYNAMICALLY POPULATED BY THE BUILDER FRAMEWORK
 # <encoder functions>
 def encode(data):
 	data = base64.b64encode(data)
@@ -35,12 +35,12 @@ def decode(data):
 
 # <transport functions>
 
-global TASK_ID
-TASK_ID = ""
 
 def prepTransport():
 	# Auth as a script app
 	global reddit # DEBUG: Not sure if needed
+	global TASK_ID
+	TASK_ID = "0"
 	reddit = praw.Reddit(client_id=CLIENT_ID,
 		client_secret=CLIENT_SECRET,
 		password=PASSWORD,
@@ -57,7 +57,7 @@ def sendData(data):
 	return 0
 
 def recvData():
-		# Here, we're going to assume the only messages in the inbox with our 
+	# Here, we're going to assume the only messages in the inbox with our 
 	#   subject are relevant and contain a full task or response, requiring only one task at a time
 	task = ""
 	while True:
@@ -69,13 +69,14 @@ def recvData():
 			# Got our new task
 			if message.subject == RECV_NAME:
 				task = message.body
+				global TASK_ID
 				TASK_ID = message.id
-				break
-			# Hopefully you never hit this
+				return decode(task)
 			else:
+				# message.id isn't right, but we don't have a task yet
 				sleep(5)
 				pass
-	return decode(task)
+
 
 # </transport functions>
 
