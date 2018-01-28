@@ -3,7 +3,7 @@ from PIL import Image
 import base64
 
 # <START OF GHETTO CONFIG>
-VERSION = "0"
+VERSION = 0
 # </END OF GHETTO CONFIG>
 
 
@@ -39,6 +39,7 @@ def encode(data):
 				x += 1
 				pass
 			pass
+		pix[0,0][0] = VERSION
 		image_list.append(img.load)
 		pass
 
