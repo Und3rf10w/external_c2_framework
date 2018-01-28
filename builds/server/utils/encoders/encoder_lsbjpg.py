@@ -54,6 +54,7 @@ def decode(data):
 	for image in data:
 		pix = Image.load(image)
 		# DEBUG
+		# pix[0,0][1] == order of photo in series
 		print "Adding image " + str(pix[0,0][1]) + " of " + str(pix[0,0][2])
 		image_id = pix[0,0][1]
 		ordered_images.update({image_id: image})
@@ -65,7 +66,8 @@ def decode(data):
 
 	# Iterate through our ordered list of images
 	# to rebuild our data
-	for key, image in ordered_images:
+	for k in ordered_images.keys():
+		image = ordered_image[k]
 		pix = Image.load(image)
 			for x in range(image.size[1] - 1):
 				if x == 0:
