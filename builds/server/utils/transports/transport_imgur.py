@@ -49,7 +49,7 @@ def sendTokens(tokens):
 	print album_object #DEBUG
 
 	# Upload our image to the album
-	img_byte_array = cStringIO.StringIO()
+	img_byte_array = StringIO()
 	img.save(img_byte_array, format='JPEG')
 	y = client.upload(image=img_byte_array.getvalue(), config=fields)
 	print y #DEBUG
