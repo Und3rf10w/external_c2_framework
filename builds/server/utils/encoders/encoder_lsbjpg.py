@@ -49,10 +49,23 @@ def decode(data):
 	# Recieves a list of images as input
 	# Start with ordering list list of images
 
-	# TODO: add logic to order the images
-	# ordered_images = 
+	# logic to order the images
+	ordered_images = []
+	for image in data:
+		pix = Image.load(image)
+		# DEBUG
+		print "Adding image " + str(pix[0,0][1]) + " of " + str(pix[0,0][2])
+		image_id = pix[0,0][1]
+		ordered_images.update({image_id: image})
+
+	# Now lets order our list
+	ordered_images = sorted(ordered_images)
+
 	byte_list = []
-	for image in ordered_images:
+
+	# Iterate through our ordered list of images
+	# to rebuild our data
+	for key, image in ordered_images:
 		pix = Image.load(image)
 			for x in range(image.size[1] - 1):
 				if x == 0:
@@ -68,4 +81,3 @@ def decode(data):
 
 	# Return the decoded_data
 	return decoded_data
-
