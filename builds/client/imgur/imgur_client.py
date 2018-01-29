@@ -212,7 +212,7 @@ def recvData():
 	resetAccount()
 
 	# Now lets unbase64 and decompress this data
-	raw_data = zlib.decompress(base64.b64decode(final_data))
+	raw_data = zlib.decompress(base64.b64decode(reconstructed_data))
 	return raw_data
 
 # </transport functions>
