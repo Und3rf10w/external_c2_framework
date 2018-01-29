@@ -2,11 +2,12 @@ from imgurpython import ImgurClient
 import PIL
 from PIL import Image
 from cStringIO import StringIO
-from time import sleep
+import time
 from sys import exit
 import urlparse
 import base64
 import requests
+import zlib
 
 # YOU NEED TO GET A TOKEN FOR YOUR APPLICATION FIRST.=
 # SET UP YOUR ACCOUNT.
@@ -27,21 +28,19 @@ refresh_token =
 # TODO: Client won't last more than a month without this logic.
 #   - need to add authtoken refresh logic
 
+def resetAccount():
+	account_albums = client.get_account_albums(USERNAME)
+	for album in account_albums:
+		images = client.get_album_images(album.id)
+		for image in images:
+			client.delete_image(image.id)
+		client.album_delete(album.id)
+
 def prepClientTransport():
 	global client
 	client = ImgurClient(client_id, client_secret)
 
 	getTokens()
-	return 0
-
-def deleteAlbums(albums):
-	for album in albums:
-		client.album_delete(album.id)
-	return 0
-
-def deleteImages(images):
-	for imageid in images:
-		client.delete_image(imageid)
 	return 0
 
 def getTokens():
@@ -71,10 +70,33 @@ def getTokens():
 
 	# Cleanup time!
 	client.set_user_auth(access_token, refresh_token)
-	deleteAlbums(account_albums)
-	client.delete_image(token_image.id)
+	resetAccount()
 
 	return 0
+
+
+def checkStatus(silent=True):
+	# Checks the account status
+	#   if we discover we don't have enough credits to continue, we will sleep until our credits are reset
+	credits = client.make_request('GET', 'credits')
+
+	# Supports pseudo debug output
+	if silent == False:
+		print "%d credits remaining of %d for this user's ip" %(credits['UserRemaining'], credits['UserLimit'])
+		print "%d credits remaining of %d for this client" %(credits['ClientRemaining'], credits['ClientLimit'])
+		print "User credits reset @ " + str(time.ctime(credits['UserReset']))
+
+	# Wait for our credits to reset if we don't have enough
+	if int(credits['UserRemaining']) < 10:
+		print "WARNING: Not enough credits to continue making requests, waiting for credits to replenish"
+		while time.time() <= credits['UserReset']:
+			print "Current time: " + str(time.ctime(time.time()))
+			print "Reset @ %s, sleeping for 5m" % (time.ctime(credits['UserReset']))
+			time.sleep(300)
+		print "Credits reset!"
+		checkStatus()
+	return credits
+
 
 def sendTokens(tokens):
 	# Sends tokens in plain text. Eventually, I'd like to get it so I can
@@ -116,7 +138,7 @@ def sendTokens(tokens):
 				for album in account_albums:
 					if album.id == album_object['id']:
 						print "Album still exists, waiting 60 seconds for client to send new album"
-						sleep(60)
+						time.sleep(60)
 						continue
 			else:
 				break
@@ -168,7 +190,64 @@ def sendData(data):
 	# Logic will probably be different for client,
 	# indicating that we're going to run into issues
 	# Here, we're expecting to recieve a list of PIL images from the encoder
-	
+	fields = {}
+	fields = { 'title': "TSK4U", 'privacy': "hidden"}
+	album_object = client.create_album(fields)
+	fields.update({"id": album_object['id']})
+
+	data = base64.b64encode(zlib.compress(data, 9))
+	data_list = [data[i:i+1079] for i in range(0, len(data), 1079)]
+
+	photo_id = 1
+	image_upload_fields = {'type': 'base64', 'album': album_object['id']}
+
+	credits = checkStatus(silent=False)
+	if credits['UserRemaining'] < len(data_list) or credits['ClientRemaining'] < len(data_list):
+
+	print "Uploading %d images" % (len(data_list))
+	for chunk in data_list:
+		photo = encode(chunk, photo_id=photo_id)
+		image_upload_fields.update({'image': base64.b64encode(photo.getvalue())})
+		request = client.make_request('POST', 'upload', image_upload_fields)
+		photo_id = photo_id + 1
+		del photo
+		credits = checkStatus(silent=False)
+		# If photo_id % 50, we'll sleep for 3 minutes to not trip our rate limit
+		# There is an upload limit of 50 images per IP address per hour. 
+		if photo_id % 40 == 0:
+			print "Upload limit for this hour exceeded, sleeping until next hour"
+			time.sleep(300)
+
 
 def retrieveData():
+	# Check for new albums
+	while True:
+		try:
+			account_albums = client.get_account_albums(USERNAME)
+			account_albums[0]
+			break
+		except IndexError:
+			print "No new albums yet"
 
+	x = 0
+	reconstructed_data = ""
+	data_list = []
+
+	# Iterate through each album
+	for x in range(0, len(account_albums)):
+		album_images = client.get_album_images(account_albums[x].id)
+
+		# Iterate through each image in the album
+		for image in album_images:
+			curr_image_data = Image.open(StringIO(requests.get(image.link).content))
+			data_list.append(decode(curr_image_data))
+			pass
+	
+	# Reconstruct the data
+	reconstructed_data = ''.join(data_list).strip('\0')
+
+	resetAccount()
+
+	# Now lets unbase64 and decompress this data
+	raw_data = zlib.decompress(base64.b64decode(final_data))
+	return raw_data
