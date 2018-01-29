@@ -19,6 +19,8 @@ TOKEN_LEN = 81 # Don't change this
 USERNAME = ''
 client_id = ''
 client_secret = ''
+SEND_ALBUM_NAME = "TSK4U"
+RECV_ALBUM_NAME = "RESP4U"
 access_token = ''
 refresh_token = ''
 # </END OF GHETTO CONFIG SECTION>
@@ -49,9 +51,12 @@ def getTokens():
 		try:
 			account_albums = client.get_account_albums(USERNAME)
 			account_albums[0]
-			break
+			if account_albums[0].title == "TK4U":
+				break
+			else:
+				print "No new albums yet, sleeping for 2m"
 		except IndexError:
-			print "No new albums yet"
+			print "No new albums yet, sleeping for 2m"
 			time.sleep(120)
 
 	x = 0
@@ -202,7 +207,7 @@ def sendData(data):
 	# indicating that we're going to run into issues
 	# Here, we're expecting to recieve a list of PIL images from the encoder
 	fields = {}
-	fields = { 'title': "TSK4U", 'privacy': "hidden"}
+	fields = { 'title': SEND_ALBUM_NAME, 'privacy': "hidden"}
 	album_object = client.create_album(fields)
 	fields.update({"id": album_object['id']})
 
@@ -237,9 +242,13 @@ def retrieveData():
 		try:
 			account_albums = client.get_account_albums(USERNAME)
 			account_albums[0]
-			break
+			if account_albums[0].title == RECV_ALBUM_NAME:
+				break
+			else:
+				print "No new albums yet, sleeping for 2m"
 		except IndexError:
-			print "No new albums yet"
+			print "No new albums yet, sleeping for 2m"
+			time.sleep(120)
 
 	x = 0
 	reconstructed_data = ""
