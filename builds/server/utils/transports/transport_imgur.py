@@ -260,6 +260,7 @@ def retrieveData():
 				break
 			else:
 				print "No new albums yet, sleeping for 2m"
+				time.sleep(120)
 		except IndexError:
 			print "No new albums yet, sleeping for 2m"
 			time.sleep(120)

