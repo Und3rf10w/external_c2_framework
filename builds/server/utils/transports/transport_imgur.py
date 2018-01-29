@@ -8,8 +8,9 @@ import urlparse
 import base64
 import requests
 import zlib
+import utils.encoders.encoder_lsbjpg as encoder
 
-# YOU NEED TO GET A TOKEN FOR YOUR APPLICATION FIRST.=
+# YOU NEED TO GET A TOKEN FOR YOUR APPLICATION FIRST.
 # SET UP YOUR ACCOUNT.
 
 
@@ -217,7 +218,7 @@ def sendData(data):
 
 	print "Uploading %d images" % (len(data_list))
 	for chunk in data_list:
-		photo = encode(chunk, photo_id=photo_id)
+		photo = encoder.encode(chunk, photo_id=photo_id)
 		image_upload_fields.update({'image': base64.b64encode(photo.getvalue())})
 		request = client.make_request('POST', 'upload', image_upload_fields)
 		photo_id = photo_id + 1
@@ -251,7 +252,7 @@ def retrieveData():
 		# Iterate through each image in the album
 		for image in album_images:
 			curr_image_data = Image.open(StringIO(requests.get(image.link).content))
-			data_list.append(decode(curr_image_data))
+			data_list.append(encoder.decode(curr_image_data))
 			pass
 	
 	# Reconstruct the data
