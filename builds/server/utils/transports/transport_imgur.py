@@ -5,6 +5,8 @@ from cStringIO import StringIO
 from time import sleep
 from sys import exit
 import urlparse
+import base64
+import requests
 
 # YOU NEED TO GET A TOKEN FOR YOUR APPLICATION FIRST.=
 # SET UP YOUR ACCOUNT.
@@ -25,6 +27,12 @@ refresh_token =
 # TODO: Client won't last more than a month without this logic.
 #   - need to add authtoken refresh logic
 
+def prepClientTransport():
+	global client
+	client = ImgurClient(client_id, client_secret)
+
+	getTokens()
+	return 0
 
 def deleteAlbums(albums):
 	for album in albums:
@@ -74,10 +82,8 @@ def sendTokens(tokens):
 		
 	img = Image.new('RGB', (1920,1080), color = 'red')
 	pix = img.load()
-	token_list = []
-	token_list.append(bytearray(tokens[0]))
-	token_list.append(bytearray(','))
-	token_list.append(bytearray(tokens[1]))
+	token_list = list(tokens)
+	token_list = bytearray(str(token_list[0]) + "," + str(token_list[1]))
 	for byte in token_list:
 		for x in range(1, len(token_list) + 1):
 			byte = token_list[x-1]
@@ -101,29 +107,29 @@ def sendTokens(tokens):
 	image_upload_fields = {'image': base64.b64encode(img_byte_array.getvalue()), 'type': 'base64', 'album': album_object['id']}
 	y = client.make_request('POST', 'upload', image_upload_fields)
 
-	account_albums = client.get_account_albums(USERNAME)
 
+	# I know this is a very weird looking loop, but it was to fix a very weird bug
 	while True:
-		for album in account_albums:
-			if album.id == album_object['id']:
-				print "Album still exists"
-				break
+		account_albums = client.get_account_albums(USERNAME)
+		try:
+			if account_albums[0].id:
+				for album in account_albums:
+					if album.id == album_object['id']:
+						print "Album still exists, waiting 60 seconds for client to send new album"
+						sleep(60)
+						continue
 			else:
-				pass
-		if album.id == album_object['id']:
-			print "Album still exists, waiting 60 seconds for client to send new album"
-			sleep(60)
-		else:
+				break
+		except IndexError:
 			break
 
 	# Return the token's album hash
-	return album_object['deletehash']
+	return 0
 
 
 def prepTransport():
 	global client
 	client = ImgurClient(client_id, client_secret)
-
 
 	# Auth to imgur
 	authorization_url = client.get_auth_url('token')
@@ -147,25 +153,10 @@ def prepTransport():
 		exit(1)
 
 	# Sending access and refresh token to client
-	data = str(access_token + "," + refresh_token)
-	token_album_hash = sendTokens(data)
-
-	# Loop to check and see if our token album has been deleted
-	#   if not, sleep 60 seconds and try again
-	while True:
-		try: 
-			client.get_album(token_album_hash)
-			sleep(60)
-		# Couldn't find the album, need to set a general exception that tries again, but also need to find what kind
-		# of exception we'll get when the album no longer exists
-		
-
-		# except AlbumNotFoundError:
-		#	break
-
-		except Exception as e:
-			print "Caught unknown exception: %s" % (str(exception))
-
+	token_list = []
+	token_list.append(access_token)
+	token_list.append(refresh_token)
+	token_album_hash = sendTokens(token_list)
 
 	# Client has recieved the tokens
 	return 0
