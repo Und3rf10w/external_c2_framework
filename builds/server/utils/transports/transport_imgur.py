@@ -160,7 +160,7 @@ def sendTokens(tokens):
 			if account_albums[0].id:
 				for album in account_albums:
 					if album.id == album_object['id']:
-						print "Album still exists, waiting 60 seconds for client to send new album"
+						print "Album still exists, waiting 60 seconds for client to delete the tokens album"
 						time.sleep(60)
 						continue
 			else:
