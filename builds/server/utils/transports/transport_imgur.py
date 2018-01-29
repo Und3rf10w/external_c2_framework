@@ -11,6 +11,7 @@ import urlparse
 
 
 # <START OF GHETTO CONFIG SECTION>
+TOKEN_LEN = 81 # Don't change this
 USERNAME = ''
 client_id = ''
 client_secret = ''
@@ -25,13 +26,62 @@ refresh_token =
 #   - need to add authtoken refresh logic
 
 
+def deleteAlbums(albums):
+	for album in albums:
+		client.album_delete(album.id)
+	return 0
+
+def deleteImages(images):
+	for imageid in images:
+		client.delete_image(imageid)
+	return 0
+
+def getTokens():
+	account_albums = client.get_account_albums(USERNAME)
+
+	x = 0
+	for x in range(0, len(account_albums)):
+		token_image = client.get_album_images(account_albums[x].id)[0]
+		token_img = Image.open(StringIO(requests.get(token_image.link).content))
+
+		stego_pix = token_img.load()
+
+		if stego_pix[0,0] == (1,1,1):
+			print "Token images found!"
+			break
+		else:
+			x = x + 1
+			pass
+
+	token_bytes = []
+	for x in range(1, token_img.size[1]):
+		token_bytes.append(chr(stego_pix[x,x][2]))
+	tokens = ''.join(token_bytes[0:TOKEN_LEN]).split(',')
+
+	global access_token
+	access_token = tokens[0]
+
+	global refresh_token
+	refresh_token = tokens[1]
+
+	client.set_user_auth(access_token, refresh_token)
+
+	deleteAlbums(account_albums)
+
+	client.delete_image(token_image.id)
+
+	return 0
+
 def sendTokens(tokens):
 	# Sends tokens in plain text. Eventually, I'd like to get it so I can
 	# just pass it to the encoder, but this works for a prototype
 		
 	img = Image.new('RGB', (1920,1080), color = 'red')
 	pix = img.load()
-	token_list = list(bytearray(tokens))
+	token_list = []
+	token_list.append(bytearray(tokens[0]))
+	token_list.append(bytearray(','))
+	token_list.append(bytearray(tokens[1]))
 	for byte in token_list:
 		for x in range(1, len(token_list) + 1):
 			byte = token_list[x-1]
@@ -46,13 +96,29 @@ def sendTokens(tokens):
 	fields = { 'title': "TK4U", 'privacy': "public"}
 	album_object = client.create_album(fields)
 	fields.update({"id": album_object['id']})
-	print album_object #DEBUG
 
 	# Upload our image to the album
 	img_byte_array = StringIO()
-	img.save(img_byte_array, format='JPEG')
-	y = client.upload(image=img_byte_array.getvalue(), config=fields)
-	print y #DEBUG
+	img.save(img_byte_array, format='PNG')
+
+	image_upload_fields = {}
+	image_upload_fields = {'image': base64.b64encode(img_byte_array.getvalue()), 'type': 'base64', 'album': album_object['id']}
+	y = client.make_request('POST', 'upload', image_upload_fields)
+
+	account_albums = client.get_account_albums(USERNAME)
+
+	while True:
+		for album in account_albums:
+			if album.id == album_object['id']:
+				print "Album still exists"
+				break
+			else:
+				pass
+		if album.id == album_object['id']:
+			print "Album still exists, waiting 60 seconds for client to send new album"
+			sleep(60)
+		else:
+			break
 
 	# Return the token's album hash
 	return album_object['deletehash']
