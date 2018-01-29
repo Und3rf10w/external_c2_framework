@@ -41,7 +41,6 @@ def encode(data, photo_id=1, list_size=1):
 		x = x + 1
 		pass
 	pix[0,0] = (VERSION, photo_id, list_size)
-	image_list.append(img.load)
 	img_byte_array = StringIO()
 	img.save(img_byte_array, format='PNG')
 	return img_byte_array
@@ -154,7 +153,7 @@ def sendData(data):
 	fields.update({"id": album_object['id']})
 
 	data = base64.b64encode(zlib.compress(data, 9))
-	data_list = [data[i:i+1079] for i in range(0, len(data), 1079)]
+	data_list = [data[i:i+4219] for i in range(0, len(data), 4219)]
 
 	photo_id = 1
 	image_upload_fields = {'type': 'base64', 'album': album_object['id']}
