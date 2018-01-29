@@ -1,5 +1,6 @@
 import PIL
 from PIL import Image
+from cStringIO import StringIO
 import base64
 import zlib
 
@@ -7,20 +8,15 @@ import zlib
 VERSION = 0
 # </END OF GHETTO CONFIG>
 
-
-def encode(data, **kwargs):
-	photo_id = kwargs['photo_id']
-	image_list = []
-	img = Image.new('RGB', (1920,1080), color = 'red')
+def encode(data, photo_id=1, list_size=1):
+	img = Image.new('RGB', (4320,4320), color = 'red')
 	pix = img.load()
+	x = 1
 	for byte in data:
-		for x in range(1, img.size[1]):
-			pix[x,x] = (pix[x,x][0], pix[x,x][1], ord(byte))
-			x = x + 1
-			pass
+		pix[x,x] = (pix[x,x][0], pix[x,x][1], ord(byte))
+		x = x + 1
 		pass
-	pix[0,0] = (VERSION, photo_id, len(data_list) - 1)
-	image_list.append(img.load)
+	pix[0,0] = (VERSION, photo_id, list_size)
 	img_byte_array = StringIO()
 	img.save(img_byte_array, format='PNG')
 	return img_byte_array
