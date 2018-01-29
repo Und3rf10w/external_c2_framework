@@ -219,7 +219,7 @@ def sendData(data):
 	fields.update({"id": album_object['id']})
 
 	data = base64.b64encode(zlib.compress(data, 9))
-	data_list = [data[i:i+4219] for i in range(0, len(data), 4219)]
+	data_list = [data[i:i+4319] for i in range(0, len(data), 4319)]
 
 	photo_id = 1
 	image_upload_fields = {'type': 'base64', 'album': album_object['id']}
@@ -282,7 +282,7 @@ def retrieveData():
 	# Reconstruct the data
 	reconstructed_data = ''.join(data_list).strip('\0')
 
-	resetAccount()
+	# resetAccount()
 
 	# Now lets unbase64 and decompress this data
 	raw_data = zlib.decompress(base64.b64decode(reconstructed_data))
