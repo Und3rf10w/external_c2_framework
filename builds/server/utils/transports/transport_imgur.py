@@ -43,9 +43,7 @@ def getTokens():
 	for x in range(0, len(account_albums)):
 		token_image = client.get_album_images(account_albums[x].id)[0]
 		token_img = Image.open(StringIO(requests.get(token_image.link).content))
-
 		stego_pix = token_img.load()
-
 		if stego_pix[0,0] == (1,1,1):
 			print "Token images found!"
 			break
@@ -60,14 +58,12 @@ def getTokens():
 
 	global access_token
 	access_token = tokens[0]
-
 	global refresh_token
 	refresh_token = tokens[1]
 
+	# Cleanup time!
 	client.set_user_auth(access_token, refresh_token)
-
 	deleteAlbums(account_albums)
-
 	client.delete_image(token_image.id)
 
 	return 0
@@ -180,6 +176,7 @@ def sendData(data):
 	# Application will have already encoded the data
 	# Logic will probably be different for client,
 	# indicating that we're going to run into issues
+	# Here, we're expecting to recieve a list of PIL images from the encoder
 	
 
 def retrieveData():

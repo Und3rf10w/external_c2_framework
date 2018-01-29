@@ -1,6 +1,7 @@
 import PIL
 from PIL import Image
 import base64
+import zlib
 
 # <START OF GHETTO CONFIG>
 VERSION = 0
@@ -9,16 +10,23 @@ VERSION = 0
 
 def encode(data):
 	# Recieves raw data as input
-	# Start with base64 encoding it
-	data = base64.b64encode(data)
+	# Start with compressing it with zlib
+	# Then base64 the output to make it nice ascii
+	data = base64.b64encode(zlib.compress(data, 9))
 
+
+	# TODO: add a feature where if len(data_list) > 255, the last image will have a new album URL
 	# Regardless if len(data) > 1079, we'll still have it as a list
-	data_list = [data[i:i] + 1079] for i in range(0, len(data), 1079)
+	data_list = [data[i:i+1079] for i in range(0, len(data), 1079)]
+
+
+	print len(data_list) #DEBUG
 
 	# We'll use the upperleftmost pixel as a pseudo header:
 	# ($ENCODER_VERSION, $PHOTO_NUM_IN_SERIES, $TOTAL_NUM_OF_PHOTOS_IN_SERIES)
 
 	image_list = []
+	photo_id = 1
 	# Loop through number of elements in the datalist
 	for photo_id in range(0, len(data_list) - 1):
 		data_to_write = data_list[photo_id]
@@ -29,17 +37,13 @@ def encode(data):
 		# Loop through the number of bytes in data_to_write
 		for byte in data_to_write:
 			# Loop through diaganol pixels
-			for x in range(img.size[1] - 1):
-				# Ignore the top left pixel
-				if x == 0:
-					x = x + 1
-					pass
+			for x in range(1, img.size[1] + 1):
 				# Write the byte to the blue value in the pixel
 				pix[x,x] = (pix[x,x][0], pix[x,x][1], ord(byte))
-				x += 1
+				x = x + 1
 				pass
 			pass
-		pix[0,0][0] = VERSION
+		pix[0,0][0] = (VERSION, photo_id, len(data_list) - 1)
 		image_list.append(img.load)
 		pass
 
@@ -80,7 +84,7 @@ def decode(data):
 				pass
 
 	# Now we have a list of bytes that are a base64 encoded string
-	decoded_data = base64.decode(''.join(byte_list))
+	decoded_data = base64.b64decode(''.join(byte_list))
 
 	# Return the decoded_data
 	return decoded_data
