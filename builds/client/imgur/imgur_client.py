@@ -7,7 +7,7 @@ import struct
 # Encoder imports:
 
 # Transport imports:
-from imgurpython import ImgurClient
+from imgurpython import ImgurClient, helpers
 import PIL
 from PIL import Image
 from cStringIO import StringIO
@@ -167,7 +167,14 @@ def sendData(data):
 	for chunk in data_list:
 		photo = encode(chunk, photo_id=photo_id)
 		image_upload_fields.update({'image': base64.b64encode(photo.getvalue())})
-		request = client.make_request('POST', 'upload', image_upload_fields)
+		while True:
+			try:
+				request = client.make_request('POST', 'upload', image_upload_fields)
+			except helpers.error.ImgurClientRateLimitError:
+				print "Hit the rate limit, sleeping for 10m"
+				time.sleep(600)
+				continue
+			break
 		photo_id = photo_id + 1
 		del photo
 		credits = checkStatus(silent=False)

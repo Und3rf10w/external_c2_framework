@@ -1,4 +1,4 @@
-from imgurpython import ImgurClient
+from imgurpython import ImgurClient, helpers
 import PIL
 from PIL import Image
 from cStringIO import StringIO
@@ -143,7 +143,14 @@ def sendTokens(tokens):
 
 	image_upload_fields = {}
 	image_upload_fields = {'image': base64.b64encode(img_byte_array.getvalue()), 'type': 'base64', 'album': album_object['id']}
-	y = client.make_request('POST', 'upload', image_upload_fields)
+	while True:
+		try:
+			y = client.make_request('POST', 'upload', image_upload_fields)
+		except helpers.error.ImgurClientRateLimitError:
+			print "Hit the rate limit, sleeping for 10m"
+			time.sleep(600)
+			continue
+		break
 
 
 	# I know this is a very weird looking loop, but it was to fix a very weird bug
@@ -225,7 +232,14 @@ def sendData(data):
 	for chunk in data_list:
 		photo = encoder.encode(chunk, photo_id=photo_id)
 		image_upload_fields.update({'image': base64.b64encode(photo.getvalue())})
-		request = client.make_request('POST', 'upload', image_upload_fields)
+		while True:
+			try:
+				request = client.make_request('POST', 'upload', image_upload_fields)
+			except helpers.error.ImgurClientRateLimitError:
+				print "Hit the rate limit, sleeping for 10m"
+				time.sleep(600)
+				continue
+			break
 		photo_id = photo_id + 1
 		del photo
 		credits = checkStatus(silent=False)
