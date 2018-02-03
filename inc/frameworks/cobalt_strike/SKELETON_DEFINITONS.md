@@ -5,7 +5,7 @@ This document lists and defines the builder definitons used for the `SkeletonHan
 Values marked: `# * - Defined by user` will be read in from values directly defined by the user. Values not marked as such are defined by the conditions of the environment during execution of the builder logic.
 
 ## Definitions
-##### skeletons/client/clientcore/clientcore.py
+##### client/clientcore.py
 ```
     # Replaced with the source code of the selected encoder goes
     encoder_code = ```[var:::encoder_code]```
@@ -27,7 +27,7 @@ Values marked: `# * - Defined by user` will be read in from values directly defi
 ```
 ----
 
-##### skeletons/client/clientdll/c2file_dll.c
+##### clientdll/c2file_dll.c
 ```
     # Replaced with the name of the pipe that the client will open for the beacon
     # * - Defined by user
@@ -36,7 +36,7 @@ Values marked: `# * - Defined by user` will be read in from values directly defi
 ```
 ----
 
-##### skeletons/clienthelpers/compile_dll.sh
+##### clienthelpers/compile_dll.sh
 ```
     # Replaced with the name of the dll that the client will refer to the embedded dll as
     # * - Defined by user
