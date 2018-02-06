@@ -13,7 +13,10 @@ class Builder(object):
 		return ""
 
 	def load_skeletons(self, skeletons):
-		return directory(os.listdir())
+		skeleton = []
+		for filename in os.listdir(skeletons):
+			skeleton.append(filename) 
+		return skeleton
 
 		# return completed_skeleton
 

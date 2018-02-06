@@ -28,7 +28,7 @@ from time import sleep
 # </transport functions>
 
 # Client core
-C2_BLOCK_TIME = ```[var:::c2_block_time]```
+C2_BLOCK_TIME = int(```[var:::c2_block_time]```)
 CDLL_NAME = ```[var:::cdll_name]```
 
 maxlen = 1024*1024

@@ -12,7 +12,7 @@ VERSION = 0
 # </END OF GHETTO CONFIG>
 
 def encode(data, photo_id=1, list_size=1):
-	img = Image.new('RGB', (```[var:::img_size]````,```[var:::img_size]````), color = 'red')
+	img = Image.new('RGB', (int(```[var:::img_size]```),int(```[var:::img_size]```)), color = 'red')
 	pix = img.load()
 	x = 1
 	for byte in data:

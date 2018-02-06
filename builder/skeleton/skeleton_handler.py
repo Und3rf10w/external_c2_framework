@@ -6,8 +6,8 @@ class SkeletonHandler(object):
 		self.target_skeleton = target_skeleton
 		self.file_contents = ""
 		self.regex_replacement_marker = '```\[var:::(\w*)\]```'
-		self.regex_replacement_value_marker = '```\[var:::'+self.new_value+'\]```' 
 		self.target_var = target_var # given as a normal string
+		self.regex_replacement_value_marker = '```\[var:::'+self.target_var+'\]```' 
 
 	def LoadSkeleton(self):
 		try:
