@@ -1,6 +1,7 @@
 import argparse
 import ConfigParser
 import os
+from distutils.dir_util import mkpath
 
 import builder
 from builder.skeleton import skeleton_handler
@@ -12,7 +13,6 @@ def load_config(config_path):
 
 	return config_load
 
-
 def find_skeleton(component_type, component_name):
 	return_path = ""
 	components_dir = "skeletons" + os.sep + component_type + "s" + os.sep + component_name.replace((component_type + "_"), "") + os.sep
@@ -21,6 +21,16 @@ def find_skeleton(component_type, component_name):
 			filepath = components_dir + file
 			if component_name in filepath:
 				return_path = filepath
+	return return_path
+
+def find_framework(component_type, framework_name):
+	return_path = []
+	components_dir = "skeletons" + os.sep + component_type + "s" + os.sep + framework_name + os.sep
+	for subdir, dirs, files in os.walk(components_dir):
+		for file in files:
+			filepath = components_dir + file
+			if not filepath.endswith(".md"):
+				return_path.append(filepath)
 	return return_path
 
 def build_module(build, module_type, selected_module):
@@ -43,13 +53,14 @@ def build_module(build, module_type, selected_module):
 		build_skeleton.ReplaceString()
 		# if args.debug:
 		# 	print "Current encoder contents, after loop: " + "\n" + build_skeleton.GetCurrentFile()
-
-	module_destination = args.build_path + os.sep + module_type + os.sep + selected_module + ".py"
+	module_destination = args.build_path + os.sep + module_type + os.sep
+	mkpath(module_destination)
+	module_destination = module_destination + selected_module + ".py"
 	build.build_client_file(build_skeleton.GetCurrentFile(), module_destination)
 	# Just cleanup
 	del build_skeleton, component_skeleton
 
-	# return build_skeleton
+	return module_destination
 
 
 def main():
@@ -64,15 +75,6 @@ def main():
 
 	global args
 	args = parser.parse_args()
-
-	# Let's hardcode some values for right now...right
-	# MASSIVE DEBUG / TODO / LOOK FOR ME
-
-	args.selected_transport = "transport_imgur"
-	args.selected_encoder = "encoder_lsbjpg"
-	args.config_path = "sample_builder_config.config.sample"
-	args.selected_framework = "cobalt_strike"
-
 
 	# Let's load our config file
 	global config
@@ -92,11 +94,16 @@ def main():
 
 	print "Building file(s) for %s, with %s and %s at %s" %(args.selected_framework, args.selected_transport, args.selected_encoder, args.build_path)
 
-	# Let's start with building an encoder, which should be simple enough? 
-	#  Pass it the builder object, module type, and the name of the selected module
-	build_module(build, "encoder", args.selected_encoder)
-	build_module(build, "transport", args.selected_transport)
-	
+	built_encoder_path = build_module(build, "encoder", build.encoder)
+	built_transport_path = build_module(build, "transport", build.transport)
+
+	# TODO: For the framework object, we need to recreate the directory structure in the 'build_path',
+	#   then iterate through each file in the client for all client_options vars,
+	#    then iterate through each file in the server for all server_options vars,
+	#     then iterate through each file in both for all framework_options vars
+	# Generally, we won't need more than just the framework_options, so we'll start with that...
+	framework_files = find_framework("framework", build.framework)
+
 
 
 

@@ -1,6 +1,6 @@
 # Builder replacement mapping definitions
 
-This document lists and defines the builder definitons used for the `SkeletonHandler()` utility for documentation purposes for the framework: `cobalt_strike`.
+This document lists and defines the builder definitons used for the `SkeletonHandler()` utility for documentation purposes.
 
 Values marked: `# * - Defined by user` will be read in from values directly defined by the user. Values not marked as such are defined by the conditions of the environment during execution of the builder logic.
 
