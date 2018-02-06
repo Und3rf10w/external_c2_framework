@@ -10,7 +10,10 @@ c2_block_time = 100
 cdll_name = cdll.dll
 c2_pipe_name = "\\\\.\\pipe\\foobar"
 client_consts = 
-
+external_c2_addr = 127.0.0.1
+external_c2_port = 2222
+idle_time = 5
+c2_arch = x86
 
 [encoder_options]
 img_format = PNG

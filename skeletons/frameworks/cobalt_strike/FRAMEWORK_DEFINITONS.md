@@ -40,7 +40,6 @@ For this reason, **IT IS CRITICAL YOU FORCE THE DESIRED TYPE OF YOUR VARIABLE**.
     
     # Replaced with the name of the dll that the client will refer to the embedded dll as
     # * - Defined by user
-    # Must be passed as an escaped string in r'aw' format
     cdll_name = ```[var:::cdll_name]```
 ```
 ----
@@ -49,7 +48,6 @@ For this reason, **IT IS CRITICAL YOU FORCE THE DESIRED TYPE OF YOUR VARIABLE**.
 ```python
     # Replaced with the name of the pipe that the client will open for the beacon
     # * - Defined by user
-    # Must be passed as an escaped string in r'aw' format
     c2_pipe_name = ```[var:::c2_pipe_name]````
 ```
 ----
@@ -58,7 +56,35 @@ For this reason, **IT IS CRITICAL YOU FORCE THE DESIRED TYPE OF YOUR VARIABLE**.
 ```python
     # Replaced with the name of the dll that the client will refer to the embedded dll as
     # * - Defined by user
-    # Must be passed as an escaped string in r'aw' format
     cdll_name = ```[var:::cdll_name]```
+```
+----
+
+##### server/config.py
+```python
+    # Replaced with a number that defines the amount of time the client will wait between batches of jobs
+    # * - Defined by user
+    c2_block_time = ```[var:::c2_block_time]```
+
+    # Replaced with the port to be used for c2
+    # * - Defined by user
+    external_c2_port = ```[var:::external_c2_port]```
+
+    # Replaced with the ip address of the c2 server
+    # * - Defined by user
+    external_c2_addr = ```[var:::external_c2_addr]```
+
+    # Replaced with the desired arch of the stager
+    # * - Defined by user
+    c2_arch = ```[var:::c2_arch]```
+
+    # Replaced with the name of the encoder to use
+    # * - Defined by user
+    encoder = ```[var:::encoder]```
+
+    # Replaced with the name of the transport to user
+    # * - Defined by user
+    transport = ```[var:::transport]```
+
 ```
 ----

@@ -45,6 +45,8 @@ def build_framework(build, encoder_path, transport_path):
 	framework_files = find_framework("framework", build.framework)
 	encoder_code = dump_module(encoder_path)
 	transport_code = dump_module(transport_path)
+	config.set('framework_options', 'encoder', build.encoder)
+	config.set('framework_options', 'transport', build.transport)
 	return_paths = []
 	for file in framework_files:
 		build_skeleton = skeleton_handler.SkeletonHandler(file)

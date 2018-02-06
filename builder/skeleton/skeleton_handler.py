@@ -27,6 +27,8 @@ class SkeletonHandler(object):
 		for var in replace_string:
 			if isinstance(self.new_value, (int, long, float, complex)) or raw == True:
 				self.file_contents = re.sub(self.regex_replacement_value_marker.replace(str(self.new_value), self.target_var), str(self.new_value), self.file_contents)
+			elif '"' in self.new_value :
+				self.file_contents = re.sub(self.regex_replacement_value_marker.replace(self.new_value, self.target_var), repr(self.new_value).strip("'"), self.file_contents)
 			else:
 				self.file_contents = re.sub(self.regex_replacement_value_marker.replace(self.new_value, self.target_var), repr(self.new_value), self.file_contents)
 	
