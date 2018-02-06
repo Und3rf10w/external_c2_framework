@@ -1,6 +1,7 @@
 import os
 import skeleton
 import skeleton.skeleton_handler
+from helpers import common_utils
 
 class Builder(object):
 	def __init__(self):
@@ -12,13 +13,13 @@ class Builder(object):
 	def prep_builder(self):
 		return ""
 
-	def build_client_file(self, file_contents, file_name):
+	def build_client_file(self, file_contents, output_path):
 		try:
-			output_pointer = open("builds/%s") %(self.target_skeleton)
-			output_pointer.write(self.file_contents)
+			output_pointer = open(output_path, 'wb+')
+			output_pointer.write(file_contents)
 			output_pointer.close()
-			print(common_utils.color("Generated output file: ", status=True), + "%s") %(common_utils.color(str(output_pointer.name), status=False, yellow=True))
+			print(common_utils.color("Generated output file: ", status=True) + "%s") %(common_utils.color(str(output_path), status=False, yellow=True))
 		except Exception as e:
-			print (common_utils.color(("Error generating output file %s: " %(str(self.target_skeleton))), warning=True, status=False) + "%s") % (str(e))
+			print (common_utils.color(("Error generating output file %s: " %(str(output_path))), warning=True, status=False) + "%s") % (str(e))
 			pass
 

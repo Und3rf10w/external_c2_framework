@@ -1,4 +1,5 @@
 import re
+from helpers import common_utils
 
 class SkeletonHandler(object):
 	def __init__(self, target_skeleton):
@@ -15,7 +16,7 @@ class SkeletonHandler(object):
 			self.file_contents = skeleton_pointer.read()
 			skeleton_pointer.close()
 		except Exception as e:
-			print (commonUtils.color(("Error loading skeleton %s: " %(str(self.target_skeleton))), warning=True, status=False) + "%s") % (str(e))
+			print (common_utils.color(("Error loading skeleton %s: " %(str(self.target_skeleton))), warning=True, status=False) + "%s") % (str(e))
 			# Prevent future issues from arising by clearing out the target_skeleton and file_content variables
 			self.target_skeleton = ""
 			self.file_contents = ""
@@ -27,7 +28,7 @@ class SkeletonHandler(object):
 			if isinstance(self.new_value, (int, long, float, complex)):
 				self.file_contents = re.sub(self.regex_replacement_value_marker.replace(str(self.new_value), self.target_var), str(self.new_value), self.file_contents)
 			else:
-				self.file_contents = re.sub(self.regex_replacement_value_marker.replace(str(self.new_value), self.target_var), repr(str(self.new_value)), self.file_contents)
+				self.file_contents = re.sub(self.regex_replacement_value_marker.replace(self.new_value, self.target_var), repr(self.new_value), self.file_contents)
 	
 	def GetCurrentFile(self):
 		return self.file_contents
@@ -37,9 +38,9 @@ class SkeletonHandler(object):
 	# 		output_pointer = open("builds/%s") %(self.target_skeleton)
 	# 		output_pointer.write(self.file_contents)
 	# 		output_pointer.close()
-	# 		print(commonUtils.color("Generated output file: ", status=True), + "%s") %(commonUtils.color(str(output_pointer.name), status=False, yellow=True))
+	# 		print(common_utils.color("Generated output file: ", status=True), + "%s") %(common_utils.color(str(output_pointer.name), status=False, yellow=True))
 	# 	except Exception as e:
-	# 		print (commonUtils.color(("Error generating output file %s: " %(str(self.target_skeleton))), warning=True, status=False) + "%s") % (str(e))
+	# 		print (common_utils.color(("Error generating output file %s: " %(str(self.target_skeleton))), warning=True, status=False) + "%s") % (str(e))
 	# 		pass
 
 

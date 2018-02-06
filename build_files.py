@@ -13,8 +13,9 @@ def load_config(config_path):
 	return config_load
 
 
-def find_skeleton(component_type, component):
-	components_dir = "sekeletons" + os.sep + component_type + "s" + os.sep
+def find_skeleton(component_type, component_name):
+	return_path = ""
+	components_dir = "skeletons" + os.sep + component_type + "s" + os.sep + component_name.strip(component_type + "_") + os.sep
 	for subdir, dirs, files in os.walk(components_dir):
 		for file in files:
 			filepath = components_dir + file
@@ -64,21 +65,24 @@ def main():
 
 	print "Building file(s) for %s, with %s and %s at %s" %(args.selected_framework, args.selected_transport, args.selected_encoder, args.build_path)
 
-
 	# Let's start with building an encoder, which should be simple enough?
-	encoder_skeleton = find_skeleton('encoder', str(args.encoder).strip('"').strip("'"))
+	encoder_skeleton = find_skeleton('encoder', str(args.selected_encoder).strip('"').strip("'"))
 	build_skeleton = skeleton_handler.SkeletonHandler(encoder_skeleton)
-	built_encoder = build_skeleton.LoadSkeleton()
+	print "CURRENT TARGET SKELTON: " + build_skeleton.target_skeleton
+	#built_encoder = build_skeleton.LoadSkeleton()
+	build_skeleton.LoadSkeleton()
+	print "Current encoder contents, before loop: " + "\n" + build_skeleton.GetCurrentFile()
 	for item in config.items('encoder_options'):
 		key = item[0]
 		value = item[1]
-		built_encoder.target_var = key
-		built_encoder.regex_replacement_value_marker = '```\[var:::'+build_encoder.target_var+'\]```'
-		built_encoder.new_value = value
-		built_encoder.ReplaceString()
+		build_skeleton.target_var = key
+		build_skeleton.regex_replacement_value_marker = '```\[var:::'+build_skeleton.target_var+'\]```'
+		build_skeleton.new_value = value
+		build_skeleton.ReplaceString()
+		print "Current encoder contents, after loop: " + "\n" + build_skeleton.GetCurrentFile()
 	# our newly minted encoder can now be accessed with `built_encoder.GetCurrentFile()`
-	encoder_destination = build_path + os.sep + "encoder" + os.sep + selected_encoder + ".py"
-	build.build_client_file(built_encoder.GetCurrentFile(), encoder_destination)
+	encoder_destination = args.build_path + os.sep + "encoder" + os.sep + args.selected_encoder + ".py"
+	build.build_client_file(build_skeleton.GetCurrentFile(), build.build_destination)
 
 
 main()
