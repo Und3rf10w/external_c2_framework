@@ -1,12 +1,12 @@
 import re
 
 class SkeletonHandler(object):
-	def __init__(self, target_skeleton, target_var, new_value):
-		self.new_value = new_value #given as `r'\\.\sample\unescaped\string'` (sans grave accents, include quotes) if str; if a number, just give the number
+	def __init__(self, target_skeleton):
+		self.new_value = "" #given as `r'\\.\sample\unescaped\string'` (sans grave accents, include quotes) if str; if a number, just give the number
 		self.target_skeleton = target_skeleton
 		self.file_contents = ""
 		self.regex_replacement_marker = '```\[var:::(\w*)\]```'
-		self.target_var = target_var # given as a normal string
+		self.target_var = "" # given as a normal string
 		self.regex_replacement_value_marker = '```\[var:::'+self.target_var+'\]```' 
 
 	def LoadSkeleton(self):

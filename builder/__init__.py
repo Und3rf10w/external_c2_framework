@@ -12,14 +12,6 @@ class Builder(object):
 	def prep_builder(self):
 		return ""
 
-	def load_skeletons(self, skeletons):
-		skeleton = []
-		for filename in os.listdir(skeletons):
-			skeleton.append(filename) 
-		return skeleton
-
-		# return completed_skeleton
-
 	def build_client_file(self, file_contents, file_name):
 		try:
 			output_pointer = open("builds/%s") %(self.target_skeleton)
