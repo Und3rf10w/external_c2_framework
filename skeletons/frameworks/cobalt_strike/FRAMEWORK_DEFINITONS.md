@@ -4,9 +4,17 @@ This document lists and defines the builder definitons used for the `SkeletonHan
 
 Values marked: `# * - Defined by user` will be read in from values directly defined by the user. Values not marked as such are defined by the conditions of the environment during execution of the builder logic.
 
-Generally unless noted otherwise, strings must be written in the config as `r'"string"'`, or `r"'string'"`, depending on what you want. In addition, unless noted otherwise, numbers are written as `'1'` and have their type forced in the code.
+Generally unless noted otherwise, strings must be written in the config as `string`. In addition, unless noted otherwise, numbers are written as `1` and have their type forced in the code.
 
-**NOTE:** THIS MEANS YOU MUST INCLUDE QUOTES FOR YOUR STRING
+For example,
+```python
+[component]
+# Will be written to the file as 'foo'
+foo = foo
+
+# Will be written to the file as '1'
+bar = 1
+```
 
 ## Definitions
 ##### client/clientcore/clientcore.py
