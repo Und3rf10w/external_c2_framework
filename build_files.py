@@ -24,6 +24,27 @@ def find_skeleton(component_type, component_name):
 				return_path = filepath
 	return return_path
 
+def build_module(module_type, selected_module):
+	component_skeleton = find_skeleton(module_type, str(selected_module).strip('"').strip("'"))
+	build_skeleton = skeleton_handler.SkeletonHandler(component_skeleton)
+	if args.debug:
+		print "CURRENT TARGET SKELETON: " + build_skeleton.target_skeleton
+	build_skeleton.LoadSkeleton()
+
+	if args.debug:
+		print "Current encoder contents, before loop: " + "\n" + build_skeleton.GetCurrentFile()
+
+	for item in config.items('encoder_options'):
+		key = item[0]
+		value = item[1]
+		build_skeleton.target_var = key
+		build_skeleton.regex_replacement_value_marker = '```\[var:::'+build_skeleton.target_var+'\]```'
+		build_skeleton.new_value = value
+		build_skeleton.ReplaceString()
+		if args.debug:
+			print "Current encoder contents, after loop: " + "\n" + build_skeleton.GetCurrentFile()
+
+	return build_skeleton
 
 
 def main():
@@ -36,6 +57,7 @@ def main():
 	parser.add_argument('-c', '--config', help='the/path/to/the/config file to use for the builder routine', dest='config_path')
 	parser.add_argument('-b', '--buildpath', help='the/path/to place the built files into', dest='build_path')
 
+	global args
 	args = parser.parse_args()
 
 	# Let's hardcode some values for right now...right
@@ -66,23 +88,10 @@ def main():
 	print "Building file(s) for %s, with %s and %s at %s" %(args.selected_framework, args.selected_transport, args.selected_encoder, args.build_path)
 
 	# Let's start with building an encoder, which should be simple enough?
-	encoder_skeleton = find_skeleton('encoder', str(args.selected_encoder).strip('"').strip("'"))
-	build_skeleton = skeleton_handler.SkeletonHandler(encoder_skeleton)
-	print "CURRENT TARGET SKELTON: " + build_skeleton.target_skeleton
-	#built_encoder = build_skeleton.LoadSkeleton()
-	build_skeleton.LoadSkeleton()
-	print "Current encoder contents, before loop: " + "\n" + build_skeleton.GetCurrentFile()
-	for item in config.items('encoder_options'):
-		key = item[0]
-		value = item[1]
-		build_skeleton.target_var = key
-		build_skeleton.regex_replacement_value_marker = '```\[var:::'+build_skeleton.target_var+'\]```'
-		build_skeleton.new_value = value
-		build_skeleton.ReplaceString()
-		print "Current encoder contents, after loop: " + "\n" + build_skeleton.GetCurrentFile()
-	# our newly minted encoder can now be accessed with `built_encoder.GetCurrentFile()`
-	encoder_destination = args.build_path + os.sep + "encoder" + os.sep + args.selected_encoder + ".py"
-	build.build_client_file(build_skeleton.GetCurrentFile(), build.build_destination)
+	build_skeleton = build_module("encoder", args.selected_encoder)
 
+	# our newly minted encoder can now be accessed with `built_encoder.GetCurrentFile()`
+	module_destination = args.build_path + os.sep + "encoder" + os.sep + args.selected_encoder + ".py"
+	build.build_client_file(build_skeleton.GetCurrentFile(), module_destination)
 
 main()
