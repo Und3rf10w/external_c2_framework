@@ -62,13 +62,13 @@ def build_framework(build, encoder_path, transport_path):
 			build_skeleton.new_value = value
 			build_skeleton.ReplaceString()
 
-		# for item in [('encoder_code', repr(encoder_code), ('transport_code'), repr(transport_code))]:
-		# 	key = item[0]
-		# 	value = item[1]
-		# 	build_skeleton.target_var = key
-		# 	build_skeleton.regex_replacement_value_marker = '```\[var:::'+build_skeleton.target_var+'\]```'
-		# 	build_skeleton.new_value = value
-		# 	build_skeleton.ReplaceString()
+		for item in [('encoder_code', encoder_code), ('transport_code', transport_code)]:
+			key = item[0]
+			value = item[1]
+			build_skeleton.target_var = key
+			build_skeleton.regex_replacement_value_marker = '```\[var:::'+build_skeleton.target_var+'\]```'
+			build_skeleton.new_value = value
+			build_skeleton.ReplaceString(raw=True)
 
 		file_destination = file.replace(("skeletons" + os.sep), (args.build_path + os.sep))
 		mkpath(os.path.dirname(file_destination))

@@ -22,34 +22,13 @@ class SkeletonHandler(object):
 			self.file_contents = ""
 			pass
 	
-	def ReplaceString(self):
+	def ReplaceString(self, raw=False):
 		replace_string = list(set(re.findall(self.regex_replacement_marker, self.file_contents)))
 		for var in replace_string:
-			if isinstance(self.new_value, (int, long, float, complex)):
+			if isinstance(self.new_value, (int, long, float, complex)) or raw == True:
 				self.file_contents = re.sub(self.regex_replacement_value_marker.replace(str(self.new_value), self.target_var), str(self.new_value), self.file_contents)
 			else:
 				self.file_contents = re.sub(self.regex_replacement_value_marker.replace(self.new_value, self.target_var), repr(self.new_value), self.file_contents)
 	
 	def GetCurrentFile(self):
 		return self.file_contents
-
-	# def WriteGeneratedFile(self):
-	# 	try:
-	# 		output_pointer = open("builds/%s") %(self.target_skeleton)
-	# 		output_pointer.write(self.file_contents)
-	# 		output_pointer.close()
-	# 		print(common_utils.color("Generated output file: ", status=True), + "%s") %(common_utils.color(str(output_pointer.name), status=False, yellow=True))
-	# 	except Exception as e:
-	# 		print (common_utils.color(("Error generating output file %s: " %(str(self.target_skeleton))), warning=True, status=False) + "%s") % (str(e))
-	# 		pass
-
-
-# Sample usage ---- # TODO; # DEBUG; # NEPHEW, DELETE DIS
-# file_contents = 'msg = "this is a test of the emergency broacdcast system"\nfoo = ```[var:::foo]```\nbar = \'```[var:::bar]```\'\n\n#Here is some code\nprint foo\nprint bar\nprint msg\nprint ```[var:::foo]```\n'
-# target_var = "foo"
-# new_value = r"ayyyyylmao"
-
-# s = VarReplacer(file_contents, target_var, new_value)
-# print "Does target_var match s.target_var?: %s" %(target_var == s.target_var)
-# s.ReplaceString()
-# print "File was modified?: %s" %(s.file_contents != file_contents)
