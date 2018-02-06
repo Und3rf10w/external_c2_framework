@@ -15,36 +15,41 @@ def load_config(config_path):
 
 def find_skeleton(component_type, component_name):
 	return_path = ""
-	components_dir = "skeletons" + os.sep + component_type + "s" + os.sep + component_name.strip(component_type + "_") + os.sep
+	components_dir = "skeletons" + os.sep + component_type + "s" + os.sep + component_name.replace((component_type + "_"), "") + os.sep
 	for subdir, dirs, files in os.walk(components_dir):
 		for file in files:
 			filepath = components_dir + file
-			# if config.get(section, value).strip('"').strip("'") in filepath:
 			if component_name in filepath:
 				return_path = filepath
 	return return_path
 
-def build_module(module_type, selected_module):
+def build_module(build, module_type, selected_module):
 	component_skeleton = find_skeleton(module_type, str(selected_module).strip('"').strip("'"))
 	build_skeleton = skeleton_handler.SkeletonHandler(component_skeleton)
-	if args.debug:
+	if args.verbose:
 		print "CURRENT TARGET SKELETON: " + build_skeleton.target_skeleton
 	build_skeleton.LoadSkeleton()
 
-	if args.debug:
-		print "Current encoder contents, before loop: " + "\n" + build_skeleton.GetCurrentFile()
+	# if args.debug:
+	# 	print "Current encoder contents, before loop: " + "\n" + build_skeleton.GetCurrentFile()
+	mod_options_str = str(module_type) + "_options"
 
-	for item in config.items('encoder_options'):
+	for item in config.items(mod_options_str):
 		key = item[0]
 		value = item[1]
 		build_skeleton.target_var = key
 		build_skeleton.regex_replacement_value_marker = '```\[var:::'+build_skeleton.target_var+'\]```'
 		build_skeleton.new_value = value
 		build_skeleton.ReplaceString()
-		if args.debug:
-			print "Current encoder contents, after loop: " + "\n" + build_skeleton.GetCurrentFile()
+		# if args.debug:
+		# 	print "Current encoder contents, after loop: " + "\n" + build_skeleton.GetCurrentFile()
 
-	return build_skeleton
+	module_destination = args.build_path + os.sep + module_type + os.sep + selected_module + ".py"
+	build.build_client_file(build_skeleton.GetCurrentFile(), module_destination)
+	# Just cleanup
+	del build_skeleton, component_skeleton
+
+	# return build_skeleton
 
 
 def main():
@@ -87,11 +92,12 @@ def main():
 
 	print "Building file(s) for %s, with %s and %s at %s" %(args.selected_framework, args.selected_transport, args.selected_encoder, args.build_path)
 
-	# Let's start with building an encoder, which should be simple enough?
-	build_skeleton = build_module("encoder", args.selected_encoder)
+	# Let's start with building an encoder, which should be simple enough? 
+	#  Pass it the builder object, module type, and the name of the selected module
+	build_module(build, "encoder", args.selected_encoder)
+	build_module(build, "transport", args.selected_transport)
+	
 
-	# our newly minted encoder can now be accessed with `built_encoder.GetCurrentFile()`
-	module_destination = args.build_path + os.sep + "encoder" + os.sep + args.selected_encoder + ".py"
-	build.build_client_file(build_skeleton.GetCurrentFile(), module_destination)
+
 
 main()

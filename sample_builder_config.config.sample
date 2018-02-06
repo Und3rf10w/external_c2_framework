@@ -15,11 +15,12 @@ img_format = PNG
 img_size = 4320
 
 [transport_options]
-USERNAME = ""
-client_id = ""
-client_secret = ""
-SEND_ALBUM_NAME = "TSK4U"
-RECV_ALBUM_NAME = "RESP4U"
-access_token = ""
-refresh_token = ""
+username = test
+client_id = xxxxxxxxxxx
+client_secret = yyyyyyyyyyy
+stager_album_name = STG4U
+send_album_name = TSK4U
+recv_album_name = RESP4U
+access_token = 123456
+refresh_token = 654321
 

@@ -16,16 +16,16 @@ import utils.encoders.encoder_lsbjpg as encoder
 
 # <START OF GHETTO CONFIG SECTION>
 TOKEN_LEN = 81 # Don't change this
-USERNAME = ```[var:::USERNAME]```
+USERNAME = ```[var:::username]```
 client_id = ```[var:::client_id]```
 client_secret = ```[var:::client_secret]```
-SEND_ALBUM_NAME = ```[var:::SEND_ALBUM_NAME]```
-RECV_ALBUM_NAME = ```[var:::RECV_ALBUM_NAME]```
+SEND_ALBUM_NAME = ```[var:::send_album_name]```
+RECV_ALBUM_NAME = ```[var:::recv_album_name]```
 access_token = ```[var:::access_token]```
 refresh_token = ```[var:::refresh_token]```
 
 # 
-STAGER_ALBUM_NAME = ```[var:::STAGER_ALBUM_NAME]```
+STAGER_ALBUM_NAME = ```[var:::stager_album_name]```
 # </END OF GHETTO CONFIG SECTION>
 
 # Server's transport will handle access tokens and whatnot.
