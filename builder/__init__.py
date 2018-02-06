@@ -9,6 +9,8 @@ class Builder(object):
 			self.transport = ""
 			self.framework = ""
 			self.build_path = ""
+			self.encoder_code = ""
+			self.transport_code = ""
 
 	def prep_builder(self):
 		return ""

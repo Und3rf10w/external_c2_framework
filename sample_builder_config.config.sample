@@ -3,12 +3,14 @@ encoder = "encoder_lsbjpg"
 transport = "transport_imgur"
 
 [framework]
-framework = 'cobalt_strike'
+framework = cobalt_strike
 
-[client_options]
-client.c2_block_time = 100
-client.cdll_name = "cdll.dll"
-client.c2_pipe_name = "\\\\.\\pipe\\foobar"
+[framework_options]
+c2_block_time = 100
+cdll_name = cdll.dll
+c2_pipe_name = "\\\\.\\pipe\\foobar"
+client_consts = 
+
 
 [encoder_options]
 img_format = PNG
