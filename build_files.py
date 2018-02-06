@@ -27,13 +27,13 @@ def find_skeleton(component_type, component):
 
 def main():
 	parser = argparse.ArgumentParser()
-	parser.add_argument(['-v', '--verbose'], action='store_true', help='Enable verbose output', dest='verbose', default=False)
-	parser.add_argument(['-d', '--debug'], action='store_true', help='Enable debugging output', dest='debug', default=False)
-	parser.add_argument(['-f', '--framework'], help='The name of the framework to build for', dest='selected_framework')
-	parser.add_argument(['-e', '--encoder'], help='The name of the encoder module to use for the client', dest='selected_encoder')
-	parser.add_argument(['-t', '--transport'], help='The name of the transport module to use for the client', dest='selected_transport')
-	parser.add_argument(['-c', '--config'], help='the/path/to/the/config file to use for the builder routine', dest='config_path')
-	parser.add_argument(['-b', '--buildpath'], help='the/path/to place the built files into', dest='build_path')
+	parser.add_argument('-v', '--verbose', action='store_true', help='Enable verbose output', dest='verbose', default=False)
+	parser.add_argument('-d', '--debug', action='store_true', help='Enable debugging output', dest='debug', default=False)
+	parser.add_argument('-f', '--framework', help='The name of the framework to build for', dest='selected_framework')
+	parser.add_argument('-e', '--encoder', help='The name of the encoder module to use for the client', dest='selected_encoder')
+	parser.add_argument('-t', '--transport', help='The name of the transport module to use for the client', dest='selected_transport')
+	parser.add_argument('-c', '--config', help='the/path/to/the/config file to use for the builder routine', dest='config_path')
+	parser.add_argument('-b', '--buildpath', help='the/path/to place the built files into', dest='build_path')
 
 	args = parser.parse_args()
 
