@@ -9,12 +9,18 @@ Generally unless noted otherwise, strings must be written in the config as `stri
 For example,
 ```python
 [component]
-# Will be written to the file as 'foo'
-foo = foo
+# Will be written to the file as 'bar'
+foo = bar
+# Written as:
+#   foo = 'bar'
 
 # Will be written to the file as '1'
-bar = 1
+baz = 1
+# Written as:
+#   baz = '1'
 ```
+
+For this reason, **IT IS CRITICAL YOU FORCE THE DESIRED TYPE OF YOUR VARIABLE**.
 
 ## Definitions
 #### encoders/lsbjpg/encoder_lsbjpg.py
