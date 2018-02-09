@@ -124,6 +124,19 @@ That's not a question.
 **Can I submit new transport and/or encoder modules?**:
 Yes please! Submit a pull request and I would be happy to review.
 
+**How do I compile the client into an executable I can distribute?**:
+I've tested this successfully in Kali, to recreate my environment, just ensure you have [veil-evasion](https://github.com/Veil-Framework/Veil-Evasion) installed and that you ran through its setup. It should have setup a wine environment with python installed that has all of the dependencies you need. You MAY have to install the `pefile` module into this environment as well.
+
+Then, you can go to the directory for the client you want to generate an executable for and run:
+
+```bash
+chmod +x compile_dll.sh
+./compile_dll.sh
+wine "C:\\Python27\\python.exe" /usr/share/veil/pyinstaller/pyinstaller.py -F -r c2file.dll -w --key "ayyyyyyylmao" client.py
+```
+
+Replace the value for `key` with whatever you want. You should see the client executable in the `dist/` directory. If you want to generate an executable that provides a console that you can use for debugging, compile the executable with `wine "C:\\Python27\\python.exe" /usr/share/veil/pyinstaller/pyinstaller.py -F -r c2file.dll -c client.py`
+
 # Roadmap
 * Similar abstraction and modularity will be implemented in the client component as well, to support different methods of process injection for the beacon payload and other features on the roadmap.
 

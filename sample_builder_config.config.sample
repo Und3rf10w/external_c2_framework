@@ -1,0 +1,31 @@
+[builder]
+encoder = "encoder_lsbjpg"
+transport = "transport_imgur"
+
+[framework]
+framework = cobalt_strike
+
+[framework_options]
+c2_block_time = 100
+cdll_name = cdll.dll
+c2_pipe_name = "\\\\.\\pipe\\foobar"
+client_consts = 
+external_c2_addr = 127.0.0.1
+external_c2_port = 2222
+idle_time = 5
+c2_arch = x86
+
+[encoder_options]
+img_format = PNG
+img_size = 4320
+
+[transport_options]
+username = test
+client_id = xxxxxxxxxxx
+client_secret = yyyyyyyyyyy
+stager_album_name = STG4U
+send_album_name = TSK4U
+recv_album_name = RESP4U
+access_token = 123456
+refresh_token = 654321
+
