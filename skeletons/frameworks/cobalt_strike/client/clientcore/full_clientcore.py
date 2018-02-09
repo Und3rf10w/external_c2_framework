@@ -3,6 +3,7 @@ from ctypes.wintypes import *
 import struct
 from sys import exit
 from time import sleep
+import win32file
 
 # <encoder imports>
 
