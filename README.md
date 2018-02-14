@@ -111,10 +111,10 @@ The client is essentially the payload that runs on the endpoint. The logic of th
 8. Relay responses from the beacon via the `transport`
 9. Repeat steps 6-8.
 
-The client makes use of the specified `encoder` and `transport` to relay data between itself and it's respective `server`.
+The client makes use of the specified `encoder` and `transport` to relay data between itself and its respective `server`.
 
 ## Encoders
-Encoders recieve data, then modify that data to either prepare it for use to be sent via the transport, or decode data recieved via the transport back into it's raw form to be interpreted by whatever `framework` component is utilizing it.
+Encoders recieve data, then modify that data to either prepare it for use to be sent via the transport, or decode data recieved via the transport back into its raw form to be interpreted by whatever `framework` component is utilizing it.
 
 Encoders should expect to be interfaced directly by the transport, and handle data in a framework and component agnostic manner.
 
