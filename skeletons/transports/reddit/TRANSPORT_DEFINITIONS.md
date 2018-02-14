@@ -24,27 +24,26 @@ baz = 1
 ##### transports/reddit/transport_reddit.py
 
 ```
-# The api client ID to authenticate with
-CLIENT_ID = ```[var:::client_id]```
+	# The api client ID to authenticate with
+	CLIENT_ID = ```[var:::client_id]```
 
-# The api client secret to authenticate with
-CLIENT_SECRET = ```[var:::client_secret]```
+	# The api client secret to authenticate with
+	CLIENT_SECRET = ```[var:::client_secret]```
 
-# The username to use for the specified account
-USERNAME = ```[var:::username]```
+	# The username to use for the specified account
+	USERNAME = ```[var:::username]```
 
-# The password to use for the specified account
-PASSWORD = ```[var:::password]```
+	# The password to use for the specified account
+	PASSWORD = ```[var:::password]```
 
-# The user agent string to send with the requests
-# It is recommended that you include your username in it
-# sample: "I AM TOTALLY MALWARE by /u/"
-USER_AGENT = ```[var:::user_agent]```
+	# The user agent string to send with the requests
+	# It is recommended that you include your username in it
+	# sample: "I AM TOTALLY MALWARE by /u/"
+	USER_AGENT = ```[var:::user_agent]```
 
-# The subject name of the PMs that have sent data
-SEND_NAME = ```[var:::send_name]```
+	# The subject name of the PMs that have sent data
+	SEND_NAME = ```[var:::send_name]```
 
-# The suject name of the PMs that have responses
-RECV_NAME = ```[var:::recv_name]```
-
+	# The suject name of the PMs that have responses
+	RECV_NAME = ```[var:::recv_name]```
 ```
