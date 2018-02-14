@@ -11,7 +11,6 @@ cdll_name = cdll.dll
 c2_pipe_name = "\\\\.\\pipe\\foobar"
 client_consts = 
 
-
 [encoder_options]
 img_format = PNG
 img_size = 4320

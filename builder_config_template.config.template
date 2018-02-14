@@ -1,0 +1,49 @@
+# This config is parsed with the Python ConfigParser module. All sections and 
+# options stored in this file are the minimum REQUIRED by the builder. There 
+# may be options not shown that are required to generate a successful build.
+
+###########################################################################
+# Here is an explanation of how values should be entered into this config #
+###########################################################################
+# Stored in config as:
+#   foo = bar
+# Written as:
+#   foo = 'bar'
+#
+# Stored in config as:
+#   foo = "bar"
+# Written as:
+#   foo = "bar"
+#
+# Stored in config as:
+#   foo = 2
+# Written as:
+#   foo = 2
+#
+# Stored in config as:
+#  foo = "2"
+# Written as:
+#   foo = "2"
+###########################################################################
+
+[builder]
+# This section gives the builder any specific information it requires.
+
+# This MUST be wrapped in double quotes
+encoder = "$encoder_name"
+
+# This must be wrapped in double quotes
+transport = "$transport_name"
+
+[framework]
+# The specifies which framework's skeletons will be handled by the builder
+framework = cobalt_strike
+
+[framework_options]
+# Any framework specific options should be specified below
+
+[encoder_options]
+# Any encoder specific options should be specified below
+
+[transport_options]
+# Any transport specific options should be specified below
