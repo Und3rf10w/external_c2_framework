@@ -44,10 +44,10 @@ For this reason, **IT IS CRITICAL YOU FORCE THE DESIRED TYPE OF YOUR VARIABLE**.
 	# The name of the album being used for receiving responses
 	RECV_ALBUM_NAME = ```[var:::recv_album_name]```
 
-	# An default value for the access token. Just put any string
+	# A default value for the access token. Just put any string
 	access_token = ```[var:::access_token]```
 
-	# An default value for the refresh token. Just put any string
+	# A default value for the refresh token. Just put any string
 	refresh_token = ```[var:::refresh_token]```
 ```
 ----
