@@ -8,10 +8,11 @@ from email.MIMEText import MIMEText
 from time import sleep
 
 # START OF GHETTO CONFIG SECTION
-GMAIL_USER = 'example@gmail.com'
-GMAIL_PWD = 'hunter2'
-SERVER = 'smtp.gmail.com'
-SERVER_PORT = 465
+GMAIL_USER = ```[var:::gmail_user]```
+GMAIL_PWD = ```[var:::gmail_pwd]```
+SERVER = ```[var:::smtp_server]```
+SERVER_PORT = int(```[var:::smtp_port]```)
+RETRY_TIMER = int(```[var:::retry_time]```)
 # END OF GHETTO CONFIG SECTION
 
 def prepTransport():
@@ -44,7 +45,7 @@ def sendData(data):
 			break
 		except Exception as e:
 			print e
-			sleep(10) # wait 10 seconds to try again
+			sleep(RETRY_TIME) # wait RETRY_TIME seconds to try again
 
 def retrieveData():
 	c= imaplib.IMAP4_SSL(SERVER)
@@ -56,7 +57,7 @@ def retrieveData():
 		typ, id_list = c.search(None, '(UNSEEN SUBJECT "Resp4You")')
 		print id_list[0].split()
 		if not id_list[0].split():
-			sleep(10) # wait for 10 seconds before checking again
+			sleep(RETRY_TIME) # wait for RETRY_TIME seconds before checking again
 			c.select("INBOX")
 			typ, id_list = c.search(None, '(UNSEEN SUBJECT "Resp4You")')
 			pass

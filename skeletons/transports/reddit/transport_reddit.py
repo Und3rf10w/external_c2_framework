@@ -9,13 +9,13 @@ from time import sleep
 import re
 
 # START OF CONFIG
-CLIENT_ID = ""
-CLIENT_SECRET = ""
-PASSWORD = ""
-USER_AGENT = "I AM TOTALLY MALWARE by /u/"
-USERNAME = ""
-SEND_NAME = "New4You" # Subject of PM
-RECV_NAME = "Resp4You"
+CLIENT_ID = ```[var:::client_id]```
+CLIENT_SECRET = ```[var:::client_secret]```
+PASSWORD = ```[var:::password]```
+USER_AGENT = ```[var:::user_agent]```
+USERNAME = ```[var:::username]```
+SEND_NAME = ```[var:::send_name]```
+RECV_NAME = ```[var:::recv_name]```
 # END OF CONFIG
 
 # IF YOU NEED DEBUG LOGGING:

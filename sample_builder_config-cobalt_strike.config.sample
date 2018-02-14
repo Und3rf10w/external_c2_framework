@@ -26,6 +26,6 @@ client_secret = yyyyyyyyyyy
 stager_album_name = STG4U
 send_album_name = TSK4U
 recv_album_name = RESP4U
-access_token = 123456
-refresh_token = 654321
+access_token = 12a3b4c5d6e
+refresh_token = 65f4g3h2i1
 
