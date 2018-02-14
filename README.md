@@ -1,36 +1,84 @@
 # external_c2 framework
-Python framework for usage with Cobalt Strike's External C2 specification as described in the [spec](https://www.cobaltstrike.com/downloads/externalc2spec.pdf).
+Python framework for building and utlizing interfaces to transfer data between frameworks, with a specific focus on serving as an extension to Command and Control frameworks.
 
-The primary design goal is to be a very modular implementation of the external c2 spec that provides enough abstraction to easily implement C2 channels for Cobalt Strike. Ideally, all a user would have to do is create a `transport` module, an `encoder` module, and populate a configuration file to implement a new channel.
+Currently, this is only intended as an implementation of Cobalt Strike's External C2 specification as described in [this spec document](https://www.cobaltstrike.com/downloads/externalc2spec.pdf), but is subject to change as the project matures.
 
-## Architecture
-This project consists of three main parts:
- - Builder (not yet implemented)
- - Client
- - Server
+# Architecture
+This project consists of the following main parts:
+- Builder
+- Skeletons
+- Frameworks
+- Transports
+- Encoders
+- Manager (not yet implemented)
 
+## Builder
+The builder reads in a config file, and uses configured options to generate a build by replacing `markers` within `skeletons`.
 
-### Builder
-The builder dynamically builds client and server deployments based on the specified configuration. Ideally, the client would be able to be distributed as a single compiled file such as a dll or exe.
+The builder can be used with `build_files.py`. A sample builder configuration is provided as `sample_builder_config.config.sample`.
 
-### Client
-The client is essentially the payload that runs on the endpoint, referred to as `third-party client` within the spec. The logic of the client is primarily static:
-1. Run any preparations need to be utilizing the `transport`
-2. Receive the stager
-3. Inject the stager and open the handle to the beacon
-4. Obtain metadata from the beacon
-5. Relay the metadata from the beacon to the C2 server via the `transport`
-6. Watch the `transport` for new tasks
-7. Relay new tasks to the beacon
-8. Relay responses from the beacon via the `transport`
-9. Repeat steps 6-8.
+## Skeletons
+`skeletons` are the different "skeletons" of code that the `builder` will dynamically populate to generate a completely usable build. `skeletons` contain `markers` that will be replaced with usable values by the `builder`. There are three different 'types' of skeletons:
 
-Configurations needed for the transport and encoding mechanisms are statically copied into the client. Function logic for transporting and encoding mechanisms are also statically copied into from their respective modules.
+### Skeleton Markers
+A marker can be placed inside any file in a `skeleton`, which will be replaced with a value specified in the builder config. In best practice, **markers should never be used to directly write variables, and should only ever be used to set values**. If a marker's value has to be reused, one should opt to store the value in a variable and reference it that way, instead of reusing the same marker.
 
-Process injection logic is determined from the builder.
+The marker format is: ` ```[var:::identifier_for_the_marker]``` `
 
-### Server
-The server is the application that brokers communication between the `client` and the `c2 server`, referred to as `third-party Client Controller` within the spec. The server logic is primarily static, but supports verbose and debug output to assist with development:
+Strings will be written into a skeleton directly wrapped in single quotes, and numbers will be written as is.
+
+**In the event a string in the config is wrapped in double quotes**, the string will be written directly to the file wrapped in double quotes instead, and the wrapping single quotes will be stripped.
+
+This relationship can demonstrated as:
+
+```python
+#################
+# Skeleton Code #
+#################
+
+# Skeleton contains the following line of code:
+foo = ```[var:::bar]```
+
+##############
+# End Result #
+##############
+
+# Stored in config as:
+#   foo = bar
+# Written as:
+foo = 'bar'
+
+# Stored in config as:
+#   foo = "bar"
+# Written as:
+foo = "bar"
+
+# Stored in config as:
+#   foo = 2
+# Written as:
+foo = 2
+
+# Stored in config as:
+#  foo = "2"
+# Written as:
+foo = "2"
+```
+
+## Frameworks
+Frameworks are the base application that determines what data is being used by the `transport` and `encoder`, and how that data is used. What a specific `framework` actually does doesn't really matter, so long as logic exists to import and use the `encoder` and `transport`. Most of the essential portions of a framework (primarily `client` logic) will be stored as a `skeleton`, with an interface to interact with the server portion of it being stored as a base `framework` object.
+
+Generally, a framework is contains a `server` and `client`, and makes use of `encoders` and `transports` to relay data between them. 
+
+There are few fundamentals to consider when building a `framework`:
+* The `framework` is responsible for ensuring that the `encoder` is made available to the `transport` to be used.
+* If the `framework` uses a client-server relationship, they should be appropriately organized as such.
+* Understand that in a majority of cases, the end-user will never directly interact with a framework's `client`, so if you want things to be reconfigurable on the `client`, it needs to be able to do that during runtime with no direct interaction.
+* There should be little need for creating a `server` `skeleton` because the end-user is going to be directly interacting with a framework's `server`. Instead, opt to both read in options from a configuration, and give the end-user the ability to modify options (such as a block timer or vebosity) during runtime.
+* A `framework` skeleton will be processed by the builder, iterating through every file in it, so if a certain argument needs to be configurable at build time, it can be easily done.
+* A `framework` `server` should be able to be interfaced by a common `framework_manager`.
+
+### Framework Server
+The server is the application that brokers communication between the `client` and the `c2 server`. The server logic is primarily static. The logic for the server for the `cobalt_strike` framework, referred to as `third-party Client Controller` within the spec, is shown below:
 1. Parse the configuration
 2. Import the specified encoding module
 3. Import the specified transport module
@@ -49,52 +97,47 @@ The server is the application that brokers communication between the `client` an
 16. Relay the response to the c2 server.
 17. Repeat steps 11-16
 
-The determination of which `encoder` and `transport` module the server imports is determined from the values stored in config.py.
+A `server` should support the ability to handle multiple clients (not yet implemented), and be interfaced by a `framework_manager`.
 
-No imports of ununsed `transport` or `encoder` modules are performed.
+### Framework Client
+The client is essentially the payload that runs on the endpoint. The logic of the client for the `cobalt_strike` framework is primarily static, and shown below:
+1. Run any preparations need to be utilizing the `transport`
+2. Receive the stager
+3. Inject the stager and open the handle to the beacon
+4. Obtain metadata from the beacon
+5. Relay the metadata from the beacon to the C2 server via the `transport`
+6. Watch the `transport` for new tasks
+7. Relay new tasks to the beacon
+8. Relay responses from the beacon via the `transport`
+9. Repeat steps 6-8.
 
-## Client and module shared functionality
-The following tables describe shared functions between the `encoding` and `transport` modules, and the client. Shared functions are essentially the exact same code.
+The client makes use of the specified `encoder` and `transport` to relay data between itself and it's respective `server`.
 
-**A VERY IMPORTANT NOTE:** The data send to the client's `sendData` and `recvData` functions should be **raw data**, where data send to the transport module's `sendData` and `retrieveData` functions should **already be encoded or decoded as needed**.
+## Encoders
+Encoders recieve data, then modify that data to either prepare it for use to be sent via the transport, or decode data recieved via the transport back into it's raw form to be interpreted by whatever `framework` component is utilizing it.
 
+Encoders should expect to be interfaced directly by the transport, and handle data in a framework and component agnostic manner.
 
-### Transport module
-| Transport Function | Client Function | Description |
-| :---:| :---: | :--- |
-| prepTransport | prepTransport | Performs any preconfigurations required to utilize the transport mechanism |
-| sendData | sendData | Defines how data is sent through the transport mechanism |
-| retrieveData | recvData | Defines how data is received through the transport mechanism
+## Transports
+Transports serve the role of sending and receiving data through a communication channel, and interfacing with the encoder to ensure that data is transformed to whatever format is nesessary. Transports should expect to recieve data from a framework component, or via the communication channel, and have the ability to relay data through the communication channel. **Transports are responsible for calling the `encoder` to encode or decode data as nesessary**.
 
-### Encoder Module
-| Encoder Function | Client Function | Description |
-| :---: | :---: | :--- |
-| encode | encode | Defines modifications done to raw data to prepare it for transport
-| decode | decode | Defines modifications done to raw data received from the transport to be relayed to its destination |
+Transports should expect to be interfaced directly by the `framework` component, and handle data in a framework and component agnostic manner.
 
 # How to use this
-First, determine which transport and encoding module you'd like to use. We'll use `transport_gmail` and `encoder_b64url` for the following example.
+1. First, determine which transport and encoding module you'd like to use. We'll use `transport_imgur` and `encoder_lsbjpg` for the following example.
 
-Next, modify `server/config.py` to suit your needs, ensuring the `ENCODER_MODULE` and `TRANSPORT_MODULE` are properly configured and pointed to your desired modules:
+2. Next, create a `builder_config.config` to suit your needs, refer to the provided sample config and template for direction on how to do this.
 
-## Sample config.py
-```python
-EXTERNAL_C2_ADDR = "127.0.0.1"
-EXTERNAL_C2_PORT = "2222"
-C2_PIPE_NAME = "foobar"
-C2_BLOCK_TIME = 100
-C2_ARCH = "x86"
-IDLE_TIME = 5
-ENCODER_MODULE = "encoder_b64url"
-TRANSPORT_MODULE = "transport_gmail"
-verbose = False
-debug = False
+3. Generate a build with `build_files.py`. As an example, one would generate a build in the `builds` directory using `encoder_lsbjpg`, and `transport_imgur` for Cobalt Strike, verbosely, with the following command:
+
+```bash
+python build_files.py -b builds -f cobalt_strike -c sample_builder_config.config.sample -e encoder_lsbjpg -t transport_imgur -v
 ```
 
-Next, modify the configuration section for your selected `transport` and `encoder` module.
+4. Next, start running your built server and distribute your client.
 
-Ensure that `client/mechanism/$mechanism_client.py`'s configuration section matches with any configurations you have defined thus far.
 
+### Cobalt Strike
 On the machine running the server, execute:
 
 `python server.py`
@@ -113,7 +156,7 @@ If everything worked, a new beacon will be registered within the Cobalt Strike c
 
 # FAQ
 **Why would you write this?**:
-There weren't very many released implementation of the spec, and of the ones that are released, they either are not in a language that I am familiar with or do not have the modularity and abstraction that I was seeking.
+There weren't very many released implementation of the Cobalt Strike spec, and of the ones that are released, they either are not in a language that I am familiar with or do not have the modularity and abstraction that I was seeking.
 
 **Why Python 2?**:
 I'm lazy and it's easy to implement new transport and encoding channels in it.
@@ -136,8 +179,3 @@ wine "C:\\Python27\\python.exe" /usr/share/veil/pyinstaller/pyinstaller.py -F -r
 ```
 
 Replace the value for `key` with whatever you want. You should see the client executable in the `dist/` directory. If you want to generate an executable that provides a console that you can use for debugging, compile the executable with `wine "C:\\Python27\\python.exe" /usr/share/veil/pyinstaller/pyinstaller.py -F -r c2file.dll -c client.py`
-
-# Roadmap
-* Similar abstraction and modularity will be implemented in the client component as well, to support different methods of process injection for the beacon payload and other features on the roadmap.
-
-* Currently, this is missing the builder functionality, which is planned to dynamically build client and server deployments, but it is on the roadmap.
