@@ -45,6 +45,8 @@ def build_framework(build, encoder_path, transport_path):
 	framework_files = find_framework("framework", build.framework)
 	encoder_code = dump_module(encoder_path)
 	transport_code = dump_module(transport_path)
+	config.set('framework_options', 'encoder', build.encoder)
+	config.set('framework_options', 'transport', build.transport)
 	return_paths = []
 	for file in framework_files:
 		build_skeleton = skeleton_handler.SkeletonHandler(file)
@@ -62,13 +64,13 @@ def build_framework(build, encoder_path, transport_path):
 			build_skeleton.new_value = value
 			build_skeleton.ReplaceString()
 
-		# for item in [('encoder_code', repr(encoder_code), ('transport_code'), repr(transport_code))]:
-		# 	key = item[0]
-		# 	value = item[1]
-		# 	build_skeleton.target_var = key
-		# 	build_skeleton.regex_replacement_value_marker = '```\[var:::'+build_skeleton.target_var+'\]```'
-		# 	build_skeleton.new_value = value
-		# 	build_skeleton.ReplaceString()
+		for item in [('encoder_code', encoder_code), ('transport_code', transport_code)]:
+			key = item[0]
+			value = item[1]
+			build_skeleton.target_var = key
+			build_skeleton.regex_replacement_value_marker = '```\[var:::'+build_skeleton.target_var+'\]```'
+			build_skeleton.new_value = value
+			build_skeleton.ReplaceString(raw=True)
 
 		file_destination = file.replace(("skeletons" + os.sep), (args.build_path + os.sep))
 		mkpath(os.path.dirname(file_destination))

@@ -14,7 +14,7 @@ from time import sleep
 
 
 # <configurations>
-```[var:::client_consts]```
+# ```[var:::client_consts]```
 # </configurations>
 
 
