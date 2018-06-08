@@ -5,6 +5,9 @@ import configureStage
 import establishedSession
 import config
 from time import sleep
+import beacon
+import threading
+import Queue
 
 def importModule(modName, modType):
 	"""
