@@ -1,6 +1,3 @@
-from utils import commonUtils
-
-
 class Beacon(object):
     def __init__(self):
         self.sock = ""

@@ -104,25 +104,27 @@ def main():
 	commonUtils.importModule(config.TRANSPORT_MODULE, "transport")
 
 	active_beacons = [] # TODO: May need to be a global? This will become obsolete if db functionality is implemented
-
 	# TODO: wrap rest of function in a perpetually repeating loop that repeats on config.C2_BLOCK_TIME?
 	while True:
 		# TODO: add logic to check for new beacons here that will return a beacon.Beacon object
+		while not new_beacon_queue.empty():
+			# TODO: Below block should only ever execute if we get a new beacon. It may be optimal to implement a queue for new beacons.
+			try:
+				beacon_obj = queue.get()
+				print commonUtils.color("Attempting to start session for beacon {}").format(beacon_obj.beacon_id)
+				t = threading.Thread(target=task_loop, args=(beacon_obj))
+				t.daemon=True
 
-		# TODO: Below block should only ever execute if we get a new beacon
-		try:
-			print commonUtils.color("Attempting to start session for beacon {}").format(beacon_obj.beacon_id)
-			t = threading.Thread(target=task_loop, args=(beacon_obj))
-			t.daemon=True
 
+				# Restart this loop
+			except KeyboardInterrupt:
+				if config.debug:
+					print commonUtils.color("\nClosing the socket to the c2 server") # TODO: Fix this message
+				commonUtils.killSocket(beacon_obj.sock) # TODO Kill all sockets for every active beacon
+				print commonUtils.color("\nExiting...", warning=True)
+				sys.exit(0)
 
-			# Restart this loop
-		except KeyboardInterrupt:
-			if config.debug:
-				print commonUtils.color("\nClosing the socket to the c2 server") # TODO: Fix this message
-			commonUtils.killSocket(beacon_obj.sock) # TODO Kill all sockets for every active beacon
-			print commonUtils.color("\nExiting...", warning=True)
-			sys.exit(0)
 		# TODO: Determine best way to determine how long to sleep between checks for new beacons
+		sleep(120) # Default timer between new beacon checks
 
 main()
