@@ -7,7 +7,7 @@ import config
 from time import sleep
 import beacon
 import threading
-import Queue
+import queue
 
 def importModule(modName, modType):
 	"""
@@ -104,6 +104,7 @@ def main():
 	commonUtils.importModule(config.TRANSPORT_MODULE, "transport")
 
 	active_beacons = [] # TODO: May need to be a global? This will become obsolete if db functionality is implemented
+	new_beacon_queue = queue.Queue()
 	# TODO: wrap rest of function in a perpetually repeating loop that repeats on config.C2_BLOCK_TIME?
 	while True:
 		# TODO: add logic to check for new beacons here that will return a beacon.Beacon object
@@ -115,9 +116,9 @@ def main():
 				t = threading.Thread(target=task_loop, args=(beacon_obj))
 				t.daemon=True
 
-
 				# Restart this loop
 			except KeyboardInterrupt:
+				# TODO: Might need to move this back a block?
 				if config.debug:
 					print commonUtils.color("\nClosing the socket to the c2 server") # TODO: Fix this message
 				commonUtils.killSocket(beacon_obj.sock) # TODO Kill all sockets for every active beacon
