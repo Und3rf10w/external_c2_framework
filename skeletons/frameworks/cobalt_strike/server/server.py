@@ -57,7 +57,7 @@ def task_loop(beacon_obj):
 		newTask = establishedSession.checkForTasks(beacon_obj.sock)
 
 		# Stuff task into data model
-		task_frame = {beacon_obj.beacon_id, newTask}
+		task_frame = [beacon_obj.beacon_id, newTask]
 		# once we have a new task (even an empty one), lets relay that to our client
 		if config.debug:
 			print commonUtils.color("Beacon {}: Encoding and relaying task to client", status=False, yellow=True).format(beacon_obj.beacon_id)
