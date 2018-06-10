@@ -7,7 +7,7 @@ import config
 from time import sleep
 import beacon
 import threading
-import queue
+import Queue
 
 
 def importModule(modName, modType):
@@ -110,13 +110,13 @@ def main():
 	prep_trans = transport.prepTransport()
 
 	active_beacons = [] # TODO: May need to be a global? This will become obsolete if db functionality is implemented
-	new_beacon_queue = queue.Queue()
+	new_beacon_queue = Queue.Queue()
 	while True:
 		try:
 			# TODO: add logic to check for new beacons here that will return a beacon.Beacon object
 			while not new_beacon_queue.empty():
 				try:
-					beacon_obj = queue.get()
+					beacon_obj = new_beacon_queue.get()
 					print commonUtils.color("Attempting to start session for beacon {}").format(beacon_obj.beacon_id)
 					t = threading.Thread(target=task_loop, args=(beacon_obj))
 					t.daemon=True
