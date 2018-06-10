@@ -54,6 +54,7 @@ def task_loop(beacon_obj):
 		if config.verbose:
 			print commonUtils.color("Beacon {}: Checking the c2 server for new tasks...").format(beacon_obj.beacon_id)
 
+		# Each beacon has it's own unique socket, so no need for framework to be aware of our internal beacon id
 		newTask = establishedSession.checkForTasks(beacon_obj.sock)
 
 		# Stuff task into data model
@@ -61,6 +62,8 @@ def task_loop(beacon_obj):
 		# once we have a new task (even an empty one), lets relay that to our client
 		if config.debug:
 			print commonUtils.color("Beacon {}: Encoding and relaying task to client", status=False, yellow=True).format(beacon_obj.beacon_id)
+
+		# Task frame contains beacon_id in it
 		establishedSession.relayTask(task_frame)
 		# Attempt to retrieve a response from the client
 		if config.verbose:
