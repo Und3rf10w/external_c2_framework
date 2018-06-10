@@ -18,11 +18,11 @@ RETRY_TIMER = int(```[var:::retry_time]```)
 def prepTransport():
 	return 0
 
-def sendData(data):
+def sendData(beacon_id, data):
 	msg = MIMEMultipart()
 	msg['From'] = GMAIL_USER
 	msg['To'] = GMAIL_USER
-	msg['Subject'] = "New4You"
+	msg['Subject'] = str(beacon_id) + ":New4You"
 	message_content = data
 	print "got msg_content"
 
@@ -47,19 +47,19 @@ def sendData(data):
 			print e
 			sleep(RETRY_TIME) # wait RETRY_TIME seconds to try again
 
-def retrieveData():
+def retrieveData(beacon_id):
 	c= imaplib.IMAP4_SSL(SERVER)
 	c.login(GMAIL_USER, GMAIL_PWD)
 	c.select("INBOX")
 
 	#typ, id_list = c.uid('search', None, "(UNSEEN SUBJECT 'New4You')".format(uniqueid))
 	while True:
-		typ, id_list = c.search(None, '(UNSEEN SUBJECT "Resp4You")')
+		typ, id_list = c.search(None, '(UNSEEN SUBJECT "' + str(beacon_id) + ':Resp4You")')
 		print id_list[0].split()
 		if not id_list[0].split():
 			sleep(RETRY_TIME) # wait for RETRY_TIME seconds before checking again
 			c.select("INBOX")
-			typ, id_list = c.search(None, '(UNSEEN SUBJECT "Resp4You")')
+			typ, id_list = c.search(None, '(UNSEEN SUBJECT "' + str(beacon_id) + ':Resp4You")')
 			pass
 		else:
 			for msg_id in id_list[0].split():

