@@ -30,12 +30,12 @@ def checkForTasks(sock):
 
 
 #def checkForResponse(sock):
-def checkForResponse():
+def checkForResponse(beacon_id):
 	"""
 	Check the covert channel for a response from the client
 	"""
 
-	recvdResponse = commonUtils.retrieveData()
+	recvdResponse = commonUtils.retrieveData(beacon_id)
 	if config.debug:
 		if len(recvdResponse) > 1:
 			print (commonUtils.color("Recieved %d bytes from client", status=False, yellow=True)) % (len(recvdResponse))
@@ -46,7 +46,6 @@ def checkForResponse():
 			print (commonUtils.color("Recieved new task from C2 server!") + "(%s bytes)") % (str(len(recvdResponse)))
 		if config.debug:
 			print (commonUtils.color("RESPONSE: ", status=False, yellow=True) + "%s") % (recvdResponse)
-
 
 	return recvdResponse
 

