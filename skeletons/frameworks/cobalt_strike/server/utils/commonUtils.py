@@ -86,6 +86,20 @@ def sendData(task_frame):
 	preped_data = prepData(encoded_task_frame)
 	transport.sendData(beacon_id, preped_data)
 
+def get_new_clients():
+	new_client = transport.check_for_new_clients()
+	if new_client is not None:
+		# Decode encoded data
+		decoded_new_client = decodeData(new_client)
+		# Convert data to data model and notify user
+		prepped_new_client = literal_eval((task_decode(decoded_new_client)))
+		print (color("NEW CLIENT RECIEVED: {}").format(prepped_new_client[0]))
+		return  prepped_new_client
+	else:
+		# if no new client, return 0
+		return 0
+
+
 def color(string, status=True, warning=False, bold=True, yellow=False):
 	"""
 	Change text color for the terminal, defaults to green

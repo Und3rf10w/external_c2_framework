@@ -114,6 +114,12 @@ def main():
 	while True:
 		try:
 			# TODO: add logic to check for new beacons here that will return a beacon.Beacon object
+			new_client = commonUtils.get_new_clients()
+			if new_client is not 0:
+				new_client_obj = beacon.Beacon()
+				new_client_obj.beacon_id = new_client[0]
+				new_client_obj.block_time = new_client[1]
+				new_beacon_queue.put(new_client_obj)
 			while not new_beacon_queue.empty():
 				try:
 					beacon_obj = new_beacon_queue.get()
