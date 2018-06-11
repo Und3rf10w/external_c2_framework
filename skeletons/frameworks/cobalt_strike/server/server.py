@@ -121,7 +121,9 @@ def main():
 			if new_client is not 0:
 				new_client_obj = beacon.Beacon()
 				new_client_obj.beacon_id = new_client[0]
-				new_client_obj.block_time = new_client[1]
+				new_client_obj.block_time = new_client[1][0]
+				new_client_obj.pipe_name = new_client[1][1]
+				new_client_obj.beacon_arch = new_client[1][2]
 				new_beacon_queue.put(new_client_obj)
 			while not new_beacon_queue.empty():
 				try:

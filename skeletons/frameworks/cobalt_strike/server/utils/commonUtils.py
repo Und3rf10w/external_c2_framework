@@ -96,7 +96,7 @@ def get_new_clients():
 		# Convert data to data model and notify user
 		print decoded_new_client
 		prepped_new_client = literal_eval(task_decode(decoded_new_client))
-		decoded_prepped_new_client = [prepped_new_client[0], task_decode(prepped_new_client[1])]
+		decoded_prepped_new_client = [prepped_new_client[0], literal_eval(task_decode(prepped_new_client[1]))]
 		if config.debug:
 			print (color("DECODED NEW CLIENT DATA RECVD: ", status=False, yellow=True) + "%s") % (decoded_prepped_new_client)
 		print (color("NEW CLIENT RECIEVED: {}").format(decoded_prepped_new_client[0]))

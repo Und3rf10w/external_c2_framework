@@ -4,5 +4,7 @@ class Beacon(object):
         self.beacon_id = "UNDEFINED"
         # Default to a block time of 30 seconds
         self.block_time = 30
+        self.pipe_name = "UNDEFINED"
+        self.beacon_arch = "UNDEFINED"
 
 
