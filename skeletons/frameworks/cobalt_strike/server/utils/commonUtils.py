@@ -78,8 +78,8 @@ def sendData(task_frame):
 	# This will upload the data via the covert channel
 	# returns a confirmation that the data has been sent
 	beacon_id = task_frame[0]
-	# if config.debug:
-		# print (color("RAW DATA TO BE SENT: ", status=False, yellow=True) + "%s") % (task_frame)
+	if config.debug:
+		print (color("RAW DATA TO BE SENT: ", status=False, yellow=True) + "%s") % (task_frame)
 	# Prepares the data to be sent via the covert channel
 	new_task_frame = str([beacon_id, task_encode(task_frame[1])])
 	encoded_task_frame = task_encode((new_task_frame))
