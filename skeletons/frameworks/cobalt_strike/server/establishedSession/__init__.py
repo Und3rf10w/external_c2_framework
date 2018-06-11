@@ -25,8 +25,6 @@ def checkForTasks(sock):
 			print (commonUtils.color("NEW TASK: ", status=False, yellow=True) + "%s") % (chunk)
 	return chunk
 
-	##########
-
 
 
 #def checkForResponse(sock):

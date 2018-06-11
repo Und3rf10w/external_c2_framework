@@ -23,7 +23,7 @@ def send_server_notification(notification_data_frame):
 	msg['From'] = GMAIL_USER
 	msg['To'] = GMAIL_USER
 	msg['Subject'] = "SessInit"
-	message_content = data
+	message_content = str(notification_data_frame)
 
 	msg.attach(MIMEText(str(message_content)))
 
@@ -44,14 +44,14 @@ def send_server_notification(notification_data_frame):
 			break
 		except Exception as e:
 			print e
-			sleep(RETRY_TIME)  # wait RETRY_TIME seconds to try again
+			sleep(RETRY_TIMER)  # wait RETRY_TIME seconds to try again
 
 def sendData(beacon_id, data):
 	msg = MIMEMultipart()
 	msg['From'] = GMAIL_USER
 	msg['To'] = GMAIL_USER
 	msg['Subject'] = str(beacon_id) + ":New4You"
-	message_content = data
+	message_content = str(data)
 	print "got msg_content"
 
 	msg.attach(MIMEText(str(message_content)))
@@ -73,7 +73,7 @@ def sendData(beacon_id, data):
 			break
 		except Exception as e:
 			print e
-			sleep(RETRY_TIME) # wait RETRY_TIME seconds to try again
+			sleep(RETRY_TIMER) # wait RETRY_TIME seconds to try again
 
 
 def check_for_new_clients():
@@ -104,7 +104,7 @@ def retrieveData(beacon_id):
 		typ, id_list = c.search(None, '(UNSEEN SUBJECT "' + str(beacon_id) + ':Resp4You")')
 		print id_list[0].split()
 		if not id_list[0].split():
-			sleep(RETRY_TIME) # wait for RETRY_TIME seconds before checking again
+			sleep(RETRY_TIMER) # wait for RETRY_TIME seconds before checking again
 			c.select("INBOX")
 			typ, id_list = c.search(None, '(UNSEEN SUBJECT "' + str(beacon_id) + ':Resp4You")')
 			pass
@@ -117,4 +117,3 @@ def retrieveData(beacon_id):
 					msg = part.get_payload()
 				c.logout()
 				return msg
-

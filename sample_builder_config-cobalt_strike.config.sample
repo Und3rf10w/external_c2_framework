@@ -8,7 +8,7 @@ framework = cobalt_strike
 [framework_options]
 c2_block_time = 100
 cdll_name = cdll.dll
-c2_pipe_name = "\\\\.\\pipe\\foobar"
+c2_pipe_name = "\\foobar"
 client_consts = 
 external_c2_addr = 127.0.0.1
 external_c2_port = 2222

