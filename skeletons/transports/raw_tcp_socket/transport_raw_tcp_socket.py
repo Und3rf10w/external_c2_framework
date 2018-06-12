@@ -34,10 +34,12 @@ def prepTransport():
 
 	return connSock
 
-def sendData(data):
+def sendData(client_id, data):
 	"""
 	This function sends 'data' via the covert channel 'connSock'
 	"""
+	# Literally does nothing
+	client_id = client_id
 
 	slen = struct.pack('<I', len(data))
 	#connSock.sendall(slen + data)
@@ -46,7 +48,7 @@ def sendData(data):
 
 	return 0
 
-def retrieveData():
+def retrieveData(client_id):
 	"""
 	This function retrieves 'data' via the covert channel 'connSock' and returns it
 	"""
@@ -68,7 +70,8 @@ def retrieveData():
 	########
 
 	# Realizing that I have to unpack the buffer length first:
-
+	# Literally does nothing
+	client_id = client_id
 	frameSize = ""
 	while len(frameSize) != 4:
 		frameSize = connSock.recv(4)
@@ -77,3 +80,9 @@ def retrieveData():
 	data = connSock.recv(dataSize)
 
 	return data
+
+def check_for_new_clients():
+	retrieveData(0)
+
+def send_server_notification(notification_data_frame):
+	sendData(0, notification_data_frame)
