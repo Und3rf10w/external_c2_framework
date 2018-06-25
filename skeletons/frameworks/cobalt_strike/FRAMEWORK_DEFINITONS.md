@@ -78,13 +78,5 @@ For this reason, **IT IS CRITICAL YOU FORCE THE DESIRED TYPE OF YOUR VARIABLE**.
     # * - Defined by user
     c2_arch = ```[var:::c2_arch]```
 
-    # Replaced with the name of the encoder to use
-    # * - Defined by user
-    encoder = ```[var:::encoder]```
-
-    # Replaced with the name of the transport to user
-    # * - Defined by user
-    transport = ```[var:::transport]```
-
 ```
 ----

@@ -46,4 +46,7 @@ baz = 1
 
 	# The suject name of the PMs that have responses
 	RECV_NAME = ```[var:::recv_name]```
+	
+	# The subject name of the PMs that have session initalization data in them
+	INIT_NAME = ```[var:::init_name]``` 
 ```

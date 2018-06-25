@@ -107,3 +107,4 @@ venv.bak/
 # Project speficic folders
 .uflow_docs/
 builds/
+.idea/
