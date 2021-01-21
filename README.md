@@ -1,5 +1,5 @@
 # external_c2 framework
-Python framework for building and utlizing interfaces to transfer data between frameworks, with a specific focus on serving as an extension to Command and Control frameworks.
+Python framework for building and utilizing interfaces to transfer data between frameworks, with a specific focus on serving as an extension to Command and Control frameworks.
 
 Currently, this is only intended as an implementation of Cobalt Strike's External C2 specification as described in [this spec document](https://www.cobaltstrike.com/downloads/externalc2spec.pdf), but is subject to change as the project matures.
 
@@ -73,7 +73,7 @@ There are few fundamentals to consider when building a `framework`:
 * The `framework` is responsible for ensuring that the `encoder` is made available to the `transport` to be used.
 * If the `framework` uses a client-server relationship, they should be appropriately organized as such.
 * Understand that in a majority of cases, the end-user will never directly interact with a framework's `client`, so if you want things to be reconfigurable on the `client`, it needs to be able to do that during runtime with no direct interaction.
-* There should be little need for creating a `server` `skeleton` because the end-user is going to be directly interacting with a framework's `server`. Instead, opt to both read in options from a configuration, and give the end-user the ability to modify options (such as a block timer or vebosity) during runtime.
+* There should be little need for creating a `server` `skeleton` because the end-user is going to be directly interacting with a framework's `server`. Instead, opt to both read in options from a configuration, and give the end-user the ability to modify options (such as a block timer or verbosity) during runtime.
 * A `framework` skeleton will be processed by the builder, iterating through every file in it, so if a certain argument needs to be configurable at build time, it can be easily done.
 * A `framework` `server` should be able to be interfaced by a common `framework_manager`.
 
@@ -114,12 +114,12 @@ The client is essentially the payload that runs on the endpoint. The logic of th
 The client makes use of the specified `encoder` and `transport` to relay data between itself and its respective `server`.
 
 ## Encoders
-Encoders recieve data, then modify that data to either prepare it for use to be sent via the transport, or decode data recieved via the transport back into its raw form to be interpreted by whatever `framework` component is utilizing it.
+Encoders receive data, then modify that data to either prepare it for use to be sent via the transport, or decode data received via the transport back into its raw form to be interpreted by whatever `framework` component is utilizing it.
 
 Encoders should expect to be interfaced directly by the transport, and handle data in a framework and component agnostic manner.
 
 ## Transports
-Transports serve the role of sending and receiving data through a communication channel, and interfacing with the encoder to ensure that data is transformed to whatever format is nesessary. Transports should expect to recieve data from a framework component, or via the communication channel, and have the ability to relay data through the communication channel. **Transports are responsible for calling the `encoder` to encode or decode data as nesessary**.
+Transports serve the role of sending and receiving data through a communication channel, and interfacing with the encoder to ensure that data is transformed to whatever format is necessary. Transports should expect to receive data from a framework component, or via the communication channel, and have the ability to relay data through the communication channel. **Transports are responsible for calling the `encoder` to encode or decode data as necessary**.
 
 Transports should expect to be interfaced directly by the `framework` component, and handle data in a framework and component agnostic manner.
 
