@@ -3,6 +3,9 @@ Python framework for usage with Cobalt Strike's External C2 specification as des
 
 The primary design goal is to be a very modular implementation of the external c2 spec that provides enough abstraction to easily implement C2 channels for Cobalt Strike. Ideally, all a user would have to do is create a `transport` module, an `encoder` module, and populate a configuration file to implement a new channel.
 
+## Credits
+Massive credit goes to [xychix](https://twitter.com/xychix). This project would not have been possible at all without their valuable contributions. Basically this project is a rebuild and extension of [Outflank's External C2 project](https://github.com/outflanknl/external_c2)
+
 ## Architecture
 This project consists of three main parts:
  - Builder (not yet implemented)
