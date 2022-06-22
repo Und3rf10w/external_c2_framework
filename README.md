@@ -3,6 +3,9 @@ Python framework for building and utilizing interfaces to transfer data between 
 
 Currently, this is only intended as an implementation of Cobalt Strike's External C2 specification as described in [this spec document](https://www.cobaltstrike.com/downloads/externalc2spec.pdf), but is subject to change as the project matures.
 
+## Credits
+Massive credit goes to [xychix](https://twitter.com/xychix). This project would not have been possible at all without their valuable contributions. Basically this project is a rebuild and extension of [Outflank's External C2 project](https://github.com/outflanknl/external_c2)
+
 # Architecture
 This project consists of the following main parts:
 - Builder
