@@ -17,6 +17,7 @@ type RegisteredComponent struct {
 	CmdChannel       chan []byte
 	TskChkTimer      int
 	TransportChannel chan []byte
+	Type             string
 }
 
 type TransportMethod interface {
