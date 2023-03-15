@@ -108,3 +108,10 @@ venv.bak/
 .uflow_docs/
 builds/
 .idea/
+
+
+# Golang
+configs/*
+build/
+!build/server
+!build/client

@@ -1,0 +1,14 @@
+{
+    "version": "2.0.0",
+    "tasks": [
+        {
+            "label": "Set VSCode to Server Environment (overwrites settings.json)",
+            "type": "shell",
+            "command": "rm -f .vscode/settings.json && echo ewogICAgImdvLmJ1aWxkRmxhZ3MiOiBbCiAgICAgICAgIi10YWdzPXNlcnZlciIKICAgIF0sCiAgICAiZ28udGVzdFRhZ3MiOiAidGVzdGluZyIKfQo= | base64 -d > .vscode/settings.json",
+            "group": {
+                "kind": "none"
+            },
+            "problemMatcher": []
+        }
+    ]
+}
