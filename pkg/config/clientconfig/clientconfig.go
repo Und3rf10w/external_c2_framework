@@ -1,6 +1,6 @@
-//go:build server
+//go:build client
 
-package config
+package clientconfig
 
 import (
 	"externalc2/pkg/config"
@@ -17,14 +17,15 @@ func ParseConfig(configToParse []byte) config.ExternalConfig {
 	if err != nil {
 		log.Fatalln("failed to load config: ", err)
 	}
-	serverSec, err := cfg.GetSection("server")
+	clientSec, err := cfg.GetSection("client")
 	if err != nil {
 		log.Fatalln("failed to read config section: ", err)
 	}
 
-	ParsedConfig.Id = serverSec.Key("id").String()
-	ParsedConfig.TransportName = serverSec.Key("transport_name").String()
-	ParsedConfig.TskChkTimer, err = strconv.Atoi(serverSec.Key("task_check_time").Value())
+	ParsedConfig.Id = clientSec.Key("id").String()
+	ParsedConfig.TransportName = clientSec.Key("transport_name").String()
+	ParsedConfig.TskChkTimer, err = strconv.Atoi(clientSec.Key("task_check_time").Value())
+	ParsedConfig.Destination = clientSec.Key("pipe_name").String()
 	if err != nil {
 		log.Fatalln("failed to parse config value timer: ", err)
 	}

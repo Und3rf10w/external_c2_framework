@@ -4,6 +4,7 @@ package external
 
 import (
 	"externalc2/pkg/component"
+	"externalc2/pkg/instructions"
 	"externalc2/pkg/transport"
 	"log"
 )

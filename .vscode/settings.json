@@ -1,6 +1,6 @@
 {
     "go.buildFlags": [
-        "-tags=server"
+        "-tags=client"
     ],
     "go.testTags": "testing"
 }

@@ -85,7 +85,9 @@ func (t *RevTCPTransportMethod) Recv(CmdChannel chan []byte) ([]byte, bool, erro
 	return data, true, nil
 }
 
-// Add Transport Structs, Initalize(), Send(), Recv(), and new*Transport functions here
+func newRevTCPTransportMethod(arugments []string) (TransportMethod, bool, error) {
+	return &RevTCPTransportMethod{"rev_tcp", idgen.GenerateTxId(), "127.0.0.1:30000"}, true, nil
+}
 
 type RevTCPTransportMethod struct {
 	Method      string
@@ -93,9 +95,7 @@ type RevTCPTransportMethod struct {
 	BindAddress string
 }
 
-func newRevTCPTransportMethod(arugments []string) (TransportMethod, bool, error) {
-	return &RevTCPTransportMethod{"rev_tcp", idgen.GenerateTxId(), "127.0.0.1:30000"}, true, nil
-}
+// Add Transport Structs, Initalize(), Send(), Recv(), and new*Transport functions here
 
 func init() {
 	transportMethods = make(map[string]func([]string) (TransportMethod, bool, error))

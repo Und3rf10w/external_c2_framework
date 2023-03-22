@@ -9,6 +9,15 @@
                 "kind": "none"
             },
             "problemMatcher": []
+        },
+        {
+            "label": "Set VSCode to Client Environment (overwrites settings.json)",
+            "type": "shell",
+            "command": "rm -f .vscode/settings.json && echo ewogICAgImdvLmJ1aWxkRmxhZ3MiOiBbCiAgICAgICAgIi10YWdzPWNsaWVudCIKICAgIF0sCiAgICAiZ28udGVzdFRhZ3MiOiAidGVzdGluZyIKfQo= | base64 -d > .vscode/settings.json",
+            "group": {
+                "kind": "none"
+            },
+            "problemMatcher": []
         }
     ]
 }

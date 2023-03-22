@@ -21,6 +21,9 @@ func genComponentInfo(serverConfig []byte) component.Component {
 	log.Println("Started ExternalC2 Framework") // TODO: banner
 	Component.Config = parsedConfig
 	Component.ComponentId = Component.Config.Id
+	Component.SelfComponentId = Component.ComponentId
+	Component.
+
 
 	return Component
 }
@@ -59,9 +62,8 @@ func clientLoop(client *transport.RegisteredComponent) {
 	// 5a. ==Error reading from client==
 	// 6. Relay error to server that host exited
 	// 7. Terminate client's channel to C2
-
 	for {
-		csCommand, err := external.RetrieveInstructionRequest(client *&transport.RegisteredComponent) (instructions.Instruction, error) {
+		csCommand, err := external.RetrieveInstructionRequest(client) {
 			var requestInstruction instructions.Instruction(client)
 			if err != nil{
 				log.Println("invalid instruction receieved: ", err)
@@ -80,8 +82,8 @@ func clientLoop(client *transport.RegisteredComponent) {
 func main() {
 	var clients []transport.RegisteredComponent
 	log.SetPrefix(logging.GetLogPrefix())
-	// TODO: Make this real
-	external_config := []byte(`[server]
+	// TODO: Make this real, support crypto
+	serverConfig := []byte(`[server]
 	id = ` + idgen.GenerateComponentId() + `
 	transport_name = http_quic
 	task_check_time = 60
